@@ -5,16 +5,19 @@
 #     python backup_db.py restore <path-to-snapshot.json>
 
 import os
+import shutil
 import sys
 from datetime import datetime
 from pathlib import Path
 
 import db
 
-# Dropbox-synced — backups land here directly instead of a local snapshots/
-# dir, since Dropbox already replicates this folder off-machine. Override
+SNAPSHOTS_DIR = Path(__file__).parent / "snapshots"
+
+# Additionally copied to Dropbox on every backup, as an off-machine copy —
+# this is a second copy of the same file, not the primary location. Override
 # with LOCADORA_BACKUP_DIR if Dropbox lives somewhere else on this machine.
-SNAPSHOTS_DIR = Path(os.environ["LOCADORA_BACKUP_DIR"]) if os.environ.get(
+DROPBOX_BACKUP_DIR = Path(os.environ["LOCADORA_BACKUP_DIR"]) if os.environ.get(
     "LOCADORA_BACKUP_DIR"
 ) else Path.home() / "Dropbox" / "My" / "Locadora tool db backup"
 
@@ -29,6 +32,11 @@ def backup() -> None:
     print(f"Backing up: {db.DB_PATH}")
     db.export_snapshot(path)
     print(f"Backup written to {path}")
+
+    DROPBOX_BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    dropbox_path = DROPBOX_BACKUP_DIR / path.name
+    shutil.copy2(path, dropbox_path)
+    print(f"Copied to {dropbox_path}")
 
 
 def restore(path_str: str) -> None:
