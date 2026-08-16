@@ -10,11 +10,13 @@ from pathlib import Path
 
 import db
 
-SNAPSHOTS_DIR = Path(__file__).parent / "snapshots"
+# Dropbox-synced — backups land here directly instead of a local snapshots/
+# dir, since Dropbox already replicates this folder off-machine.
+SNAPSHOTS_DIR = Path(r"C:\Users\fastm\Dropbox\My\Locadora tool db backup")
 
 
 def backup() -> None:
-    SNAPSHOTS_DIR.mkdir(exist_ok=True)
+    SNAPSHOTS_DIR.mkdir(parents=True, exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     # DB_PATH.stem (e.g. "contracter" vs "contracter_demo") in the filename
     # both avoids same-second collisions between the two databases and
@@ -23,7 +25,6 @@ def backup() -> None:
     print(f"Backing up: {db.DB_PATH}")
     db.export_snapshot(path)
     print(f"Backup written to {path}")
-    print("Copy this file somewhere outside this machine to keep it safe.")
 
 
 def restore(path_str: str) -> None:

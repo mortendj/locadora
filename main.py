@@ -26,6 +26,7 @@ from jinja2 import Environment, FileSystemLoader
 from xhtml2pdf import pisa
 
 from br_dates import parse_br_date, format_br_date
+from br_grammar import gender_terms
 import db
 
 
@@ -223,7 +224,10 @@ def main() -> None:
     jinja_env = Environment(
         loader=FileSystemLoader(str(ROOT / "templates")),
         autoescape=False,
+        trim_blocks=True,
+        lstrip_blocks=True,
     )
+    jinja_env.globals["gender_terms"] = gender_terms
     template = jinja_env.get_template(contract_type["template"])
 
     # 9. Ensure output directory exists

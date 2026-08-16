@@ -57,11 +57,14 @@ def validate_locacao_comercial(data):
             "generic 'atividade comercial' description instead of the "
             "tenant's actual business."
         )
-    if not registration.get("number") or not registration.get("registry_office"):
+    if not registration.get("number"):
         warnings.append(
-            "WARNING: registration.number / registration.registry_office not "
-            "provided — required before the contract can actually be averbado "
-            "at the Cartório de Registro de Imóveis (Clause 11)."
+            "NOTE: registration.number not provided — Clause 11 will render "
+            "without the averbação-at-Cartório-de-Registro-de-Imóveis "
+            "obligation. This is treated as a real possibility, not a data "
+            "gap: some properties (e.g. a room inside the landlord's own "
+            "unregistered house) may have no matrícula at all. If this "
+            "property does have one, set registration.number/registry_office."
         )
 
     # ── Term ──────────────────────────────────────────────────────────────────
