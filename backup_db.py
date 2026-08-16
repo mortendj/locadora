@@ -4,6 +4,7 @@
 #     python backup_db.py backup
 #     python backup_db.py restore <path-to-snapshot.json>
 
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -11,8 +12,11 @@ from pathlib import Path
 import db
 
 # Dropbox-synced — backups land here directly instead of a local snapshots/
-# dir, since Dropbox already replicates this folder off-machine.
-SNAPSHOTS_DIR = Path(r"C:\Users\fastm\Dropbox\My\Locadora tool db backup")
+# dir, since Dropbox already replicates this folder off-machine. Override
+# with LOCADORA_BACKUP_DIR if Dropbox lives somewhere else on this machine.
+SNAPSHOTS_DIR = Path(os.environ["LOCADORA_BACKUP_DIR"]) if os.environ.get(
+    "LOCADORA_BACKUP_DIR"
+) else Path.home() / "Dropbox" / "My" / "Locadora tool db backup"
 
 
 def backup() -> None:
