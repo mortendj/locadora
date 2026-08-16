@@ -40,6 +40,7 @@ _TABLES_IN_DEPENDENCY_ORDER = [
     ("contracts", "id"),
     ("residential_contract_details", "contract_id"),
     ("seasonal_contract_details", "contract_id"),
+    ("commercial_contract_details", "contract_id"),
     ("contract_witnesses", "id"),
 ]
 
@@ -63,6 +64,7 @@ CREATE TABLE IF NOT EXISTS people (
     bank                TEXT,
     branch              TEXT,
     account             TEXT,
+    pix_key             TEXT,
     representative_id   INTEGER REFERENCES people(id)
 );
 
@@ -137,6 +139,23 @@ CREATE TABLE IF NOT EXISTS seasonal_contract_details (
     forfeit_percent_under_30_days    INTEGER
 );
 
+CREATE TABLE IF NOT EXISTS commercial_contract_details (
+    contract_id                   INTEGER PRIMARY KEY REFERENCES contracts(id),
+    start_date                    TEXT,
+    term_months                   INTEGER,
+    term_months_spelled_out       TEXT,
+    rent                          TEXT,
+    due_day                       INTEGER,
+    security_deposit_amount       TEXT,
+    initial_discount_amount       TEXT,
+    initial_discount_months       INTEGER,
+    penalty_months                INTEGER,
+    penalty_months_spelled_out    TEXT,
+    property_tax_payer            TEXT,
+    late_payment_penalty_percent  REAL,
+    extra_json                    TEXT
+);
+
 CREATE TABLE IF NOT EXISTS contract_witnesses (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     contract_id  INTEGER NOT NULL REFERENCES contracts(id),
@@ -208,8 +227,8 @@ def insert_person(data: dict) -> int:
             type, name, company_name, nationality, marital_status,
             occupation, gender, rg, cpf, cnpj, full_address,
             registered_address, phone, email, bank, branch, account,
-            representative_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            pix_key, representative_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             data.get("type", "individual"),
@@ -229,6 +248,7 @@ def insert_person(data: dict) -> int:
             bank_details.get("bank"),
             bank_details.get("branch"),
             bank_details.get("account"),
+            bank_details.get("pix_key"),
             representative_id,
         ),
     )
@@ -268,11 +288,12 @@ def _person_row_to_dict(row: sqlite3.Row) -> dict:
         "phone":              row["phone"],
         "email":              row["email"],
     }
-    if row["bank"] or row["branch"] or row["account"]:
+    if row["bank"] or row["branch"] or row["account"] or row["pix_key"]:
         person["bank_details"] = {
             "bank":    row["bank"],
             "branch":  row["branch"],
             "account": row["account"],
+            "pix_key": row["pix_key"],
         }
     if row["representative_id"] is not None:
         person["representative"] = get_person(row["representative_id"])
@@ -370,6 +391,20 @@ _SEASONAL_DETAIL_FIELDS = [
     "forfeit_percent_30_days_or_more", "forfeit_percent_under_30_days",
 ]
 
+# "extra_json" bundles the handful of fields that are only ever rendered
+# whole into one specific clause and never queried/filtered on
+# individually (renovation reimbursement figures, property registration,
+# a tenant's professional-council registration, the optional
+# space-sharing carve-out, the early-termination penalty formula
+# override). Everything else here already exists as a plain column on
+# residential_contract_details and is reused with the same name/shape.
+_COMMERCIAL_DETAIL_FIELDS = [
+    "start_date", "term_months", "term_months_spelled_out", "rent", "due_day",
+    "security_deposit_amount", "initial_discount_amount", "initial_discount_months",
+    "penalty_months", "penalty_months_spelled_out", "property_tax_payer",
+    "late_payment_penalty_percent", "extra_json",
+]
+
 
 def insert_contract(
     contract_type: str,
@@ -382,9 +417,17 @@ def insert_contract(
     witnesses: list[dict] | None = None,
 ) -> int:
     """
-    contract_type: "residential" or "seasonal".
+    contract_type: "residential", "seasonal", or "commercial".
     details: the type-specific fields (see _RESIDENTIAL_DETAIL_FIELDS /
-        _SEASONAL_DETAIL_FIELDS) — unknown/missing keys default to None.
+        _SEASONAL_DETAIL_FIELDS / _COMMERCIAL_DETAIL_FIELDS) — unknown/missing
+        keys default to None. For "commercial", pass a nested dict under
+        details["extra"] (not details["extra_json"]) for the JSON-blob
+        fields (renovation_description, renovation_total_cost,
+        renovation_total_cost_spelled_out, registration_number,
+        registry_office, professional_registration_label,
+        professional_registration_number, penalty_formula,
+        sharing_allowed, sharing_description) — it's dumped to JSON here,
+        same as insert_property() does for its list/dict fields.
     """
     conn = get_connection()
     cur = conn.execute(
@@ -404,14 +447,21 @@ def insert_contract(
     elif contract_type == "seasonal":
         fields = _SEASONAL_DETAIL_FIELDS
         table = "seasonal_contract_details"
+    elif contract_type == "commercial":
+        fields = _COMMERCIAL_DETAIL_FIELDS
+        table = "commercial_contract_details"
     else:
         raise ValueError(f"Unknown contract_type: {contract_type!r}")
 
     placeholders = ", ".join("?" for _ in fields)
     columns = ", ".join(fields)
+    values = [
+        _dump_json(details.get("extra")) if f == "extra_json" else details.get(f)
+        for f in fields
+    ]
     conn.execute(
         f"INSERT INTO {table} (contract_id, {columns}) VALUES (?, {placeholders})",
-        (contract_id, *(details.get(f) for f in fields)),
+        (contract_id, *values),
     )
 
     for i, witness in enumerate(witnesses or []):
@@ -513,6 +563,49 @@ def get_contract(contract_id: int) -> dict | None:
         if witnesses:
             data["witnesses"] = [{"name": w["name"], "cpf": w["cpf"]} for w in witnesses]
 
+    elif row["contract_type"] == "commercial":
+        details = conn.execute(
+            "SELECT * FROM commercial_contract_details WHERE contract_id = ?",
+            (contract_id,),
+        ).fetchone()
+        extra = _load_json(details["extra_json"]) or {}
+        data["dates"] = {
+            "start_date":              details["start_date"],
+            "term_months":             details["term_months"],
+            "term_months_spelled_out": details["term_months_spelled_out"],
+        }
+        data["pricing"] = {
+            "rent":                          details["rent"],
+            "due_day":                       details["due_day"],
+            "initial_discount_amount":       details["initial_discount_amount"],
+            "initial_discount_months":       details["initial_discount_months"],
+            "late_payment_penalty_percent":  details["late_payment_penalty_percent"],
+        }
+        data["security_deposit"] = {"amount": details["security_deposit_amount"]}
+        data["termination"] = {
+            "penalty_months":             details["penalty_months"],
+            "penalty_months_spelled_out": details["penalty_months_spelled_out"],
+            "penalty_formula":            extra.get("penalty_formula"),
+        }
+        data["charges"] = {"property_tax_payer": details["property_tax_payer"]}
+        data["renovation"] = {
+            "total_cost":             extra.get("renovation_total_cost"),
+            "total_cost_spelled_out": extra.get("renovation_total_cost_spelled_out"),
+            "description":            extra.get("renovation_description"),
+        }
+        data["registration"] = {
+            "number":          extra.get("registration_number"),
+            "registry_office": extra.get("registry_office"),
+        }
+        data["professional_registration"] = {
+            "label":  extra.get("professional_registration_label"),
+            "number": extra.get("professional_registration_number"),
+        }
+        data["sharing"] = {
+            "allowed":     bool(extra.get("sharing_allowed")),
+            "description": extra.get("sharing_description"),
+        }
+
     return data
 
 
@@ -532,12 +625,13 @@ def list_contracts() -> list[dict]:
             c.id, c.contract_type, c.contract_date,
             COALESCE(t.name, t.company_name) AS tenant_name,
             p.street_address,
-            COALESCE(r.start_date, s.check_in_date) AS start_date
+            COALESCE(r.start_date, s.check_in_date, m.start_date) AS start_date
         FROM contracts c
         JOIN people t ON t.id = c.tenant_id
         JOIN properties p ON p.id = c.property_id
         LEFT JOIN residential_contract_details r ON r.contract_id = c.id
         LEFT JOIN seasonal_contract_details s ON s.contract_id = c.id
+        LEFT JOIN commercial_contract_details m ON m.contract_id = c.id
         ORDER BY c.id
         """
     ).fetchall()
@@ -548,6 +642,43 @@ def list_contracts() -> list[dict]:
         contract["label"] = f"{row['tenant_name']} / {row['street_address']} / {row['start_date']}"
         contracts.append(contract)
     return contracts
+
+
+def update_commercial_details(contract_id: int, **fields) -> None:
+    """
+    Update one or more flat columns on commercial_contract_details — e.g.
+    db.update_commercial_details(12, due_day=10). For the extra_json
+    bundle's fields, use update_commercial_extra() instead.
+    """
+    if not fields:
+        return
+    conn = get_connection()
+    set_clause = ", ".join(f"{k} = ?" for k in fields)
+    conn.execute(
+        f"UPDATE commercial_contract_details SET {set_clause} WHERE contract_id = ?",
+        (*fields.values(), contract_id),
+    )
+    conn.commit()
+
+
+def update_commercial_extra(contract_id: int, **fields) -> None:
+    """
+    Merge one or more keys into commercial_contract_details.extra_json for
+    the given contract — e.g. db.update_commercial_extra(12,
+    registration_number="..."). Existing keys not passed are preserved.
+    """
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT extra_json FROM commercial_contract_details WHERE contract_id = ?",
+        (contract_id,),
+    ).fetchone()
+    extra = _load_json(row["extra_json"]) if row and row["extra_json"] else {}
+    extra.update(fields)
+    conn.execute(
+        "UPDATE commercial_contract_details SET extra_json = ? WHERE contract_id = ?",
+        (_dump_json(extra), contract_id),
+    )
+    conn.commit()
 
 
 # ── JSON helpers ─────────────────────────────────────────────────────────────

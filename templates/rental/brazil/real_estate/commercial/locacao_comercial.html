@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Contrato de Locação Comercial</title>
+  <style>{{ contract_css }}</style>
+</head>
+<body{% if review_mode %} class="review-mode"{% endif %}>
+
+{% set LOC = "LOCADORA" if landlord.gender == "F" else "LOCADOR" if landlord.gender == "M" else "LOCADOR(A)" %}
+{% set loc_o = "a" if landlord.gender == "F" else "o" if landlord.gender == "M" else "o(a)" %}
+{% set loc_do = "da" if landlord.gender == "F" else "do" if landlord.gender == "M" else "do(a)" %}
+{% set loc_ao = "à" if landlord.gender == "F" else "ao" if landlord.gender == "M" else "ao(à)" %}
+{% set loc_pelo = "pela" if landlord.gender == "F" else "pelo" if landlord.gender == "M" else "pelo(a)" %}
+
+{% set TEN = "LOCATÁRIA" if tenant.gender == "F" else "LOCATÁRIO" if tenant.gender == "M" else "LOCATÁRIO(A)" %}
+{% set ten_o = "a" if tenant.gender == "F" else "o" if tenant.gender == "M" else "o(a)" %}
+{% set ten_da = "da" if tenant.gender == "F" else "do" if tenant.gender == "M" else "do(a)" %}
+{% set ten_ah = "à" if tenant.gender == "F" else "ao" if tenant.gender == "M" else "ao(à)" %}
+{% set ten_pelo = "pela" if tenant.gender == "F" else "pelo" if tenant.gender == "M" else "pelo(a)" %}
+{% set ten_portador = "portadora" if tenant.gender == "F" else "portador" if tenant.gender == "M" else "portador(a)" %}
+{% set ten_inscrito = "inscrita" if tenant.gender == "F" else "inscrito" if tenant.gender == "M" else "inscrito(a)" %}
+
+<p class="contract-title">CONTRATO PARTICULAR DE LOCAÇÃO DE IMÓVEL PARA FINS NÃO RESIDENCIAIS</p>
+
+{% if landlord.name %}
+<p class="intro-paragraph">
+  <span class="intro-label">{{ LOC }}:</span>
+  <span class="contract-specific">{{ landlord.name }}</span>,
+  <span class="contract-specific">{{ landlord.nationality }}</span>,
+  {% if landlord.marital_status %}<span class="contract-specific">{{ landlord.marital_status }}</span>{% else %}{% if review_mode %}<span class="contract-omitted">estado civil pendente</span>{% endif %}{% endif %}{% if landlord.occupation %},
+  <span class="contract-specific">{{ landlord.occupation }}</span>{% endif %},
+  {{ "portadora" if landlord.gender == "F" else "portador" }}{% if landlord.rg %}
+  da cédula de identidade RG nº <span class="contract-specific">{{ landlord.rg }}</span>,
+  e inscrit{{ "a" if landlord.gender == "F" else "o" }} no CPF/MF sob o nº <span class="contract-specific">{{ landlord.cpf }}</span>{% else %}
+  {% if review_mode %}<span class="contract-omitted">RG omitido</span>{% endif %}
+  e inscrit{{ "a" if landlord.gender == "F" else "o" }} no CPF/MF sob o nº <span class="contract-specific">{{ landlord.cpf }}</span>{% endif %}{% if landlord.full_address %},
+  residente e domiciliad{{ "a" if landlord.gender == "F" else "o" }} à <span class="contract-specific">{{ landlord.full_address }}</span>{% endif %}.
+</p>
+{% else %}
+<p class="intro-paragraph">
+  <span class="intro-label">LOCADOR(A):</span>
+  {% if review_mode %}<span class="contract-omitted-block">[dados do LOCADOR(A) pendentes de confirmação]</span>{% endif %}
+</p>
+{% endif %}
+
+<p class="intro-paragraph">
+  <span class="intro-label">{{ TEN }}:</span>
+  <span class="contract-specific">{{ tenant.name }}</span>,
+  <span class="contract-specific">{{ tenant.nationality }}</span>,
+  <span class="contract-specific">{{ tenant.marital_status }}</span>,
+  <span class="contract-specific">{{ tenant.occupation }}</span>,
+  {{ ten_portador }}{% if tenant.rg %}
+  da cédula de identidade RG nº <span class="contract-specific">{{ tenant.rg }}</span>,{% else %}
+  {% if review_mode %}<span class="contract-omitted">RG omitido</span>,{% endif %}{% endif %}
+  {% if professional_registration and professional_registration.label %}{{ ten_inscrito }} no {{ professional_registration.label }} sob o nº {% if professional_registration.number %}<span class="contract-specific">{{ professional_registration.number }}</span>{% else %}{% if review_mode %}<span class="contract-omitted">pendente</span>{% endif %}{% endif %},{% endif %}
+  {{ ten_inscrito }} no CPF sob o nº <span class="contract-specific">{{ tenant.cpf }}</span>{% if tenant.full_address %},
+  residente e domiciliad{{ ten_o }} à <span class="contract-specific">{{ tenant.full_address }}</span>{% endif %}.
+</p>
+
+<p class="intro-paragraph">
+  As partes acima qualificadas têm entre si, justo e contratado, o presente Contrato de Locação Comercial, regido pela Lei nº 8.245/91, mediante as cláusulas e condições a seguir:
+</p>
+
+{% set addr_parts = [] %}
+{% if property.street_address %}{% set addr_parts = addr_parts + [property.street_address] %}{% endif %}
+{% if property.neighborhood %}{% set addr_parts = addr_parts + [property.neighborhood] %}{% endif %}
+{% if property.city %}{% set addr_parts = addr_parts + [property.city] %}{% endif %}
+{% if property.state %}{% set addr_parts = addr_parts + [property.state] %}{% endif %}
+{% if property.zip_code %}{% set addr_parts = addr_parts + [property.zip_code] %}{% endif %}
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA PRIMEIRA — DO OBJETO:</span> {{ loc_o|capitalize }} {{ LOC }} dá em locação {{ ten_ah }} {{ TEN }} o imóvel situado à
+  <span class="contract-specific">{{ addr_parts|join(", ") }}</span>{% if review_mode and (not property.street_address or not property.neighborhood or not property.zip_code) %} <span class="contract-omitted">[endereço completo: pendente]</span>{% endif %}{% if registration.number %},
+  matrícula nº <span class="contract-specific">{{ registration.number }}</span> do <span class="contract-specific">{{ registration.registry_office }}</span>{% else %}
+  {% if review_mode %}, <span class="contract-omitted">matrícula e Cartório de Registro de Imóveis: pendentes</span>{% endif %}{% endif %},
+  destinado exclusivamente à atividade de {% if property.commercial_use_description %}<span class="contract-specific">{{ property.commercial_use_description }}</span>{% else %}{% if review_mode %}<span class="contract-omitted">[destinação/atividade comercial: pendente]</span>{% else %}natureza comercial lícita{% endif %}{% endif %}, sendo vedado uso diverso sem autorização prévia e por escrito {{ loc_do }} {{ LOC }}.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA SEGUNDA — DO PRAZO:</span> A locação vigorará pelo prazo determinado de
+  <span class="contract-specific">{{ dates.term_months }} ({{ dates.term_months_spelled_out }})</span> meses,
+  com início em <span class="contract-specific">{{ dates.start_date }}</span> e término em
+  <span class="contract-specific">{{ dates.end_date }}</span>.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> Findo o prazo estipulado no caput desta cláusula, e não havendo a celebração de aditivo escrito de renovação entre as partes, a locação encerrar-se-á automaticamente na data de término, devendo {{ ten_o }} {{ TEN }} restituir o imóvel nos termos da Cláusula Vigésima Segunda, ressalvado o direito {{ ten_da }} {{ TEN }} de pleitear a renovação compulsória deste contrato, nos termos dos arts. 51 a 57 da Lei nº 8.245/91, mediante ação renovatória proposta no prazo legal — entre 1 (um) ano e 6 (seis) meses anteriores ao termo final deste contrato —, desde que preenchidos os requisitos legais para tanto.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> Fica expressamente afastada, para todos os fins de direito, a prorrogação automática deste contrato por prazo indeterminado prevista no art. 56, parágrafo único, da Lei nº 8.245/91, de modo a preservar a natureza de prazo determinado da locação e, com ela, o direito de renovação compulsória previsto no Parágrafo Primeiro desta cláusula.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO TERCEIRO:</span> Qualquer renovação ou prorrogação deste contrato somente produzirá efeitos se formalizada por escrito e assinada por ambas as partes, com prazo determinado próprio, não se admitindo renovação ou prorrogação tácita.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA TERCEIRA — DO VALOR DO ALUGUEL E FORMA DE PAGAMENTO:</span> O aluguel mensal é fixado em
+  R$ <span class="contract-specific">{{ pricing.rent }}</span>, a ser pago até o dia
+  {% if pricing.due_day %}<span class="contract-specific">{{ pricing.due_day }}</span>{% else %}{% if review_mode %}<span class="contract-omitted">[dia do vencimento: pendente]</span>{% endif %}{% endif %}
+  de cada mês, mediante depósito bancário ou PIX,
+  {% if landlord.bank_details and landlord.bank_details.pix_key %}
+  utilizando a chave PIX <span class="contract-specific">{{ landlord.bank_details.pix_key }}</span>{% if landlord.bank_details.bank %} (banco <span class="contract-specific">{{ landlord.bank_details.bank }}</span>){% endif %} indicada {{ loc_pelo }} {{ LOC }}
+  {% elif landlord.bank_details and landlord.bank_details.account %}
+  na conta indicada {{ loc_pelo }} {{ LOC }}: banco
+  <span class="contract-specific">{{ landlord.bank_details.bank }}</span>, agência <span class="contract-specific">{{ landlord.bank_details.branch }}</span>,
+  conta nº <span class="contract-specific">{{ landlord.bank_details.account }}</span>
+  {% else %}
+  {% if review_mode %}<span class="contract-omitted-block"> [dados de pagamento {{ loc_do }} {{ LOC }}: pendentes]</span>{% endif %}
+  {% endif %}{% if renovation and renovation.description %}, observado o valor reduzido previsto na Cláusula Quarta enquanto vigente o abatimento ali disposto{% endif %}.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> O aluguel será reajustado anualmente pela variação do IPCA/IBGE (ou pelo índice que legalmente o substituir).
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> O atraso no pagamento acarretará multa moratória de {{ pricing.late_payment_penalty_percent }}% (por cento) sobre o valor do aluguel, juros de mora de 1% (um por cento) ao mês e correção monetária, sem prejuízo das medidas legais cabíveis.
+</p>
+
+{% if renovation and renovation.description %}
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA QUARTA — DA REFORMA DO IMÓVEL E DO ABATIMENTO NO ALUGUEL:</span> As partes reconhecem que {{ ten_o }} {{ TEN }}, com prévia e expressa autorização {{ loc_do }} {{ LOC }}, executou e custeou, às suas expensas, obra de reforma do imóvel compreendendo
+  <span class="contract-specific">{{ renovation.description }}</span>,
+  obra esta qualificada, para todos os fins de direito, como benfeitoria necessária e útil, indispensável ao funcionamento adequado da atividade {% if property.commercial_use_description %}de {{ property.commercial_use_description }}{% endif %} e que valoriza o imóvel de forma permanente.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> O custo total comprovadamente investido {{ ten_pelo }} {{ TEN }} na referida reforma do imóvel é de
+  {% if renovation.total_cost %}R$ <span class="contract-specific">{{ renovation.total_cost }}</span> (<span class="contract-specific">{{ renovation.total_cost_spelled_out }}</span>){% else %}{% if review_mode %}<span class="contract-omitted">[custo total da reforma: pendente]</span>{% endif %}{% endif %},
+  conforme notas fiscais, orçamentos e recibos que integram este contrato como Anexo I, dos quais as partes declaram ter pleno conhecimento e concordância.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> A título de ressarcimento integral pela benfeitoria descrita no caput, fica ajustado que {{ ten_o }} {{ TEN }} pagará mensalmente apenas 50% (cinquenta por cento) do valor do aluguel vigente{% if pricing.initial_discount_amount %} — correspondente, nesta data, ao desconto mensal de R$ <span class="contract-specific">{{ pricing.initial_discount_amount }}</span> sobre o aluguel de R$ <span class="contract-specific">{{ pricing.rent }}</span>{% endif %}, permanecendo os outros 50% (cinquenta por cento) como crédito compensatório em favor {{ ten_da }} {{ TEN }}, até que seja atingido o valor total indicado no Parágrafo Primeiro desta cláusula.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO TERCEIRO:</span> Estima-se que o período de abatimento se estenderá por aproximadamente
+  {% if pricing.initial_discount_months %}<span class="contract-specific">{{ pricing.initial_discount_months }}</span> ({{ pricing.initial_discount_months }}) meses, calculado com base no custo total indicado no Parágrafo Primeiro dividido pelo valor do crédito mensal{% else %}{% if review_mode %}<span class="contract-omitted">[período estimado de abatimento: a calcular quando o custo total da reforma for informado]</span>{% endif %}{% endif %},
+  sem prejuízo do reajuste anual previsto na Cláusula Terceira, o qual incidirá sobre o valor cheio do aluguel, e não sobre a parcela efetivamente paga.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO QUARTO:</span> Uma vez atingido o valor total indicado no Parágrafo Primeiro desta cláusula — o que, com base na estimativa de prazo do Parágrafo Terceiro, deverá ocorrer a partir de
+  {% if pricing.full_rent_start_date %}<span class="contract-specific">{{ pricing.full_rent_start_date }}</span>{% else %}{% if review_mode %}<span class="contract-omitted">[data: a calcular quando o custo total da reforma for informado]</span>{% endif %}{% endif %} —,
+  {{ ten_o }} {{ TEN }} passará automaticamente a recolher 100% (cem por cento) do valor do aluguel vigente a partir dessa data, independentemente de notificação, aditivo contratual ou qualquer outra formalidade. Caso os pagamentos efetivamente realizados demonstrem que a compensação foi atingida em data diversa da estimada, prevalecerá a data efetiva, cabendo a qualquer das partes comprová-la mediante os respectivos comprovantes de pagamento.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO QUINTO:</span> Em caso de rescisão antecipada da locação, por qualquer motivo e por iniciativa de qualquer das partes — seja por iniciativa {{ loc_do }} {{ LOC }}, por venda do imóvel, seja por iniciativa {{ ten_da }} própria {{ TEN }} — antes de esgotado o valor devido nos termos desta cláusula, {{ loc_o }} {{ LOC }} obriga-se a restituir imediatamente e em parcela única o saldo remanescente {{ ten_ah }} {{ TEN }}, independentemente de qual parte tenha dado causa à rescisão, assegurando-se-lhe, ainda, o direito de retenção do imóvel até o efetivo pagamento, nos termos do art. 578 do Código Civil c/c art. 35 da Lei nº 8.245/91.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEXTO:</span> Mensalmente, {{ loc_o }} {{ LOC }} confirmará {{ ten_ah }} {{ TEN }}, por WhatsApp ou aplicativo equivalente, o saldo remanescente da compensação de que trata esta cláusula, servindo tal confirmação, em conjunto com os comprovantes de pagamento referidos no Parágrafo Quarto, como prova adicional da evolução e da data de quitação da compensação.
+</p>
+{% else %}
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA QUARTA — DAS BENFEITORIAS DE INTERESSE {{ ten_da }} {{ TEN }}:</span> Eventuais obras, reformas ou benfeitorias que {{ ten_o }} {{ TEN }} deseje realizar no imóvel para adequação à sua atividade dependem de prévia e expressa autorização {{ loc_do }} {{ LOC }}, aplicando-se, quanto à indenização e retenção, o disposto na Cláusula Sexta deste contrato.
+</p>
+{% endif %}
+
+{% if renovation and renovation.description %}
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA QUINTA — DA PINTURA E DO ESTADO DO IMÓVEL NA DEVOLUÇÃO:</span> As partes declaram, para todos os fins de direito, que a pintura atual do imóvel foi integralmente executada e custeada {{ ten_pelo }} {{ TEN }} antes do início da locação, com autorização {{ loc_do }} {{ LOC }}, não integrando as condições originais de entrega do imóvel.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> Em decorrência do disposto no caput, e em expressa derrogação da praxe locatícia, fica convencionado que {{ ten_o }} {{ TEN }} está desobrigad{{ ten_o }} de repintar o imóvel por ocasião da devolução, seja ao término normal do contrato, seja em caso de rescisão antecipada, qualquer que seja o motivo.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> {{ ten_o|capitalize }} {{ TEN }} compromete-se tão somente a devolver o imóvel em condições regulares de uso, considerando o desgaste natural decorrente do exercício da atividade{% if property.commercial_use_description %} de {{ property.commercial_use_description }}{% endif %}, ficando expressamente ressalvado que eventuais desgastes, manchas ou descolorações da pintura decorrentes do tempo e do uso normal não configuram inadimplemento contratual, tampouco geram obrigação de reparo ou compensação financeira.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO TERCEIRO:</span> Tendo em vista que {{ ten_o }} própri{{ ten_o }} {{ TEN }} executou a reforma geral do imóvel — inclusive a pintura ora existente —, as partes dispensam a elaboração de laudo de vistoria formal com registros fotográficos para fins de comprovação do estado da pintura na entrada, sendo suficiente, para todos os efeitos desta cláusula, a declaração conjunta das partes constante do caput e do Parágrafo Primeiro.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO QUARTO:</span> Quanto às partes do imóvel não abrangidas pela reforma referida no caput e na Cláusula Quarta — tais como piso, janelas, instalações hidráulicas, cobertura, portas não substituídas {{ ten_pelo }} {{ TEN }} e demais elementos que {{ ten_o }} {{ TEN }} não reformou —, as partes trocarão, por WhatsApp ou aplicativo equivalente, registro fotográfico datado do estado desses elementos no início da locação, servindo tais imagens como referência de eventual condição pré-existente para fins da vistoria de saída prevista na Cláusula Décima Nona.
+</p>
+{% else %}
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA QUINTA — DA VISTORIA DE ENTRADA E DO ESTADO DO IMÓVEL:</span> Ao início da locação, as partes realizarão vistoria de entrada do imóvel, registrando, por fotografias datadas trocadas por WhatsApp ou aplicativo equivalente, o estado de conservação do imóvel — inclusive pintura, piso, janelas, portas e instalações —, para fins de referência e de comparação na vistoria de saída prevista na Cláusula Décima Nona.
+</p>
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> {{ ten_o|capitalize }} {{ TEN }} obriga-se a devolver o imóvel ao final da locação nas mesmas condições em que o recebeu, ressalvado o desgaste natural decorrente do uso normal e do decurso do tempo.
+</p>
+{% endif %}
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA SEXTA — DAS DEMAIS BENFEITORIAS:</span> As benfeitorias necessárias realizadas {{ ten_pelo }} {{ TEN }} serão sempre indenizáveis. As benfeitorias úteis, quando previamente autorizadas por escrito {{ loc_pelo }} {{ LOC }}, também o serão. As benfeitorias voluptuárias poderão ser retiradas ao término da locação, se não causarem dano ao imóvel; caso permaneçam, não gerarão direito à indenização.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA SÉTIMA — DAS DESPESAS ORDINÁRIAS E EXTRAORDINÁRIAS:</span> Correrão por conta {{ ten_da }} {{ TEN }} as despesas ordinárias, tais como consumo de água, energia elétrica, gás, internet, taxa de lixo e demais tributos e taxas incidentes sobre o uso do imóvel. Correrão por conta {{ loc_do }} {{ LOC }} as despesas extraordinárias e os reparos estruturais.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> O pagamento do IPTU incidente sobre o imóvel será de responsabilidade
+  {% if charges.property_tax_payer == 'landlord' %}{{ loc_do }} {{ LOC }}.{% else %}{{ ten_da }} {{ TEN }}.{% endif %}
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA OITAVA — DA GARANTIA LOCATÍCIA:</span>
+  {% if security_deposit.amount %}
+  Para garantia da presente locação, {{ ten_o }} {{ TEN }} prestará caução em dinheiro no valor de R$ <span class="contract-specific">{{ security_deposit.amount }}</span>, nos termos do art. 37 da Lei nº 8.245/91.
+  {% elif guarantor %}
+  A garantia locatícia da presente locação será prestada mediante fiança, nos termos deste contrato e do art. 37 da Lei nº 8.245/91.
+  {% else %}
+  As partes acordam que não será exigida garantia locatícia (caução, fiador ou seguro-fiança) para a presente locação, tendo em vista a relação de confiança existente entre as partes.
+  {% endif %}
+</p>
+{% if review_mode and not security_deposit.amount and not guarantor %}
+<p class="contract-omitted-block">[Garantia: dispensada por acordo entre as partes]</p>
+{% endif %}
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA NONA — DA RESCISÃO:</span> O presente contrato poderá ser rescindido nas hipóteses legais.
+  {% if termination.penalty_formula == "declining" %}
+  Em caso de rescisão antecipada {{ ten_pelo }} {{ TEN }}, será devida multa rescisória, nos termos do art. 4º da Lei nº 8.245/91, expressa em meses do valor do aluguel mensal vigente à época da rescisão e calculada conforme a fórmula: multa (em meses de aluguel) = o menor valor entre 3 (três) e o resultado da divisão do número de meses restantes até o termo final deste contrato por 12 (doze) — proporcionalidade que se aplica de forma decrescente e contínua, e não apenas em marcos anuais{% if renovation and renovation.description %}, deduzido, no que couber, o saldo ainda não compensado da reforma do imóvel descrita na Cláusula Quarta{% endif %}.
+  {% elif termination.penalty_months %}
+  Em caso de rescisão antecipada {{ ten_pelo }} {{ TEN }}, será devida multa rescisória de {{ termination.penalty_months }} ({{ termination.penalty_months_spelled_out }}) meses do valor do aluguel mensal vigente à época da rescisão, nos termos do art. 4º da Lei nº 8.245/91.
+  {% else %}
+  Não será devida multa rescisória em caso de rescisão antecipada por qualquer das partes, aplicando-se, quanto ao mais, o disposto no art. 4º da Lei nº 8.245/91.
+  {% endif %}
+</p>
+{% if termination.penalty_formula == "declining" %}
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> A título meramente exemplificativo, e sem prejuízo da fórmula do caput: restando 3 (três) anos ou mais para o termo final do contrato, a multa corresponde a 3 (três) meses de aluguel; restando 2 (dois) anos, a 2 (dois) meses; restando 1 (um) ano, a 1 (um) mês; restando 6 (seis) meses, a meio mês (0,5) de aluguel.
+</p>
+{% endif %}
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA — DO DIREITO DE PREFERÊNCIA:</span> Em caso de alienação do imóvel, {{ loc_o }} {{ LOC }} obriga-se a comunicar previamente e por escrito {{ ten_ah }} {{ TEN }}, assegurando-lhe o direito de preferência na aquisição, nos termos dos arts. 27 a 34 da Lei nº 8.245/91.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA PRIMEIRA — DO REGISTRO DO CONTRATO:</span> O presente contrato será registrado no Cartório de Títulos e Documentos competente e, para fins de eficácia perante terceiros e garantia do direito de preferência e do direito de retenção {{ ten_da }} {{ TEN }}, será averbado na matrícula do imóvel perante o Cartório de Registro de Imóveis competente, nos termos do art. 8º da Lei nº 8.245/91, correndo as respectivas despesas por conta {{ ten_da }} {{ TEN }}.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA SEGUNDA — DA DESTINAÇÃO E ADEQUAÇÕES REGULATÓRIAS:</span> {{ ten_o|capitalize }} {{ TEN }} fica desde já autorizad{{ ten_o }} a promover, às suas expensas, as adequações necessárias ao regular exercício da atividade de {% if property.commercial_use_description %}<span class="contract-specific">{{ property.commercial_use_description }}</span>{% else %}natureza comercial exercida{% endif %} no imóvel, incluindo, mas não se limitando a, instalações específicas, divisórias, revestimentos e demais exigências dos órgãos sanitários, municipais e regulatórios competentes para essa atividade.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> {{ loc_o|capitalize }} {{ LOC }} declara ter ciência da destinação do imóvel e compromete-se a fornecer, sempre que necessário, os documentos de propriedade e demais autorizações que dependam de sua condição de proprietário para obtenção de alvarás e licenças de funcionamento.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA TERCEIRA — DA CESSÃO, SUBLOCAÇÃO E COMPARTILHAMENTO:</span> É vedada a cessão, sublocação ou empréstimo total do imóvel a terceiros sem prévia e expressa autorização por escrito {{ loc_do }} {{ LOC }}.
+  {% if sharing.allowed %} Fica, contudo, expressamente permitid{{ ten_o }} {{ ten_ah }} {{ TEN }}, independentemente de aviso prévio ou comunicação {{ loc_ao }} {{ LOC }}, {{ sharing.description or "o compartilhamento do espaço com terceiros para o exercício da mesma atividade, nos limites da destinação prevista na Cláusula Primeira" }}.{% endif %}
+</p>
+{% if sharing.allowed %}
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> A dispensa de aviso prévio ou comunicação de que trata o caput não exime {{ ten_o }} {{ TEN }} de responsabilidade: esta permanece integral e exclusivamente responsável perante {{ loc_o }} {{ LOC }} por quaisquer atos, danos ao imóvel, descumprimentos contratuais ou infrações praticadas pelos terceiros com quem compartilhe o espaço, como se praticados {{ ten_pelo }} própri{{ ten_o }} {{ TEN }} fossem, bem como pelo cumprimento, por parte deles, da destinação prevista na Cláusula Primeira.
+</p>
+{% endif %}
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA QUARTA — DAS OBRIGAÇÕES {{ ten_da }} {{ TEN }}:</span> Além das obrigações previstas em lei, {{ ten_o }} {{ TEN }} obriga-se a:
+</p>
+<p class="sub-paragraph">a) pagar pontualmente o aluguel e demais encargos previstos neste contrato;</p>
+<p class="sub-paragraph">b) utilizar o imóvel exclusivamente para os fins previstos na Cláusula Primeira;</p>
+<p class="sub-paragraph">c) zelar pela conservação do imóvel, realizando os reparos decorrentes do uso normal;</p>
+<p class="sub-paragraph">d) permitir a vistoria do imóvel {{ loc_pelo }} {{ LOC }}, mediante prévio agendamento, com antecedência mínima de 48 (quarenta e oito) horas;</p>
+<p class="sub-paragraph">e) restituir o imóvel, ao final da locação, em condições regulares de uso, observadas as ressalvas da Cláusula Quinta.</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA QUINTA — DAS OBRIGAÇÕES {{ loc_do }} {{ LOC }}:</span> Além das obrigações previstas em lei, {{ loc_o }} {{ LOC }} obriga-se a:
+</p>
+<p class="sub-paragraph">a) entregar o imóvel em condições de uso para os fins pactuados;</p>
+<p class="sub-paragraph">b) garantir {{ ten_ah }} {{ TEN }} o uso pacífico do imóvel durante a vigência da locação;</p>
+<p class="sub-paragraph">c) responder pelos vícios ou defeitos anteriores à locação;</p>
+<p class="sub-paragraph">d) pagar as despesas extraordinárias e os tributos incidentes sobre a propriedade, quando a seu cargo nos termos da Cláusula Sétima;</p>
+<p class="sub-paragraph">e) cumprir integralmente as obrigações de ressarcimento previstas na Cláusula Quarta, quando aplicável.</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA SEXTA — DO SEGURO:</span> Cada parte é responsável por segurar, se assim desejar, os bens e riscos que lhe são próprios — {{ ten_o }} {{ TEN }} quanto aos equipamentos, instrumentais e à responsabilidade civil de sua atividade{% if property.commercial_use_description %} de {{ property.commercial_use_description }}{% endif %}, e {{ loc_o }} {{ LOC }} quanto à edificação em si —, não havendo, entre as partes, obrigação contratual de contratação ou comprovação de apólice.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> As partes reconhecem que a ausência de seguro não afasta a responsabilidade {{ ten_da }} {{ TEN }} por danos ao imóvel decorrentes de culpa sua{% if sharing.allowed %} ou dos terceiros a quem ceda o uso do espaço, nos termos da Cláusula Décima Terceira, Parágrafo Único{% endif %}, e da Cláusula Décima Quarta. Recomenda-se {{ ten_ah }} {{ TEN }}, para sua própria proteção patrimonial — e não apenas em benefício {{ loc_do }} {{ LOC }} —, a contratação de seguro de responsabilidade civil relativo à sua atividade{% if property.commercial_use_description %} de {{ property.commercial_use_description }}{% endif %}, o qual, em regra, cobre danos causados por culpa sua a bens de terceiros, incluindo a edificação {{ loc_do }} {{ LOC }}.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA SÉTIMA — DA COMUNICAÇÃO ENTRE AS PARTES:</span> As comunicações do dia a dia entre as partes poderão ser feitas livremente, inclusive por aplicativo de mensagens (WhatsApp ou equivalente). Comunicações de relevância jurídica relativa a este contrato — tais como aviso de reajuste, notificação de rescisão, comunicação da retomada do aluguel integral prevista na Cláusula Quarta{% if renovation and renovation.description %}, Parágrafo Quarto{% endif %}, ou qualquer alteração das condições aqui pactuadas — deverão ser feitas, no mínimo, por mensagem de WhatsApp (ou aplicativo equivalente) para os números a seguir, presumindo-se recebida a mensagem confirmada como entregue ou lida:
+</p>
+<p class="sub-paragraph">
+  {{ LOC }}: telefone/WhatsApp {% if landlord.phone %}<span class="contract-specific">{{ landlord.phone }}</span>{% else %}{% if review_mode %}<span class="contract-omitted">pendente</span>{% endif %}{% endif %}
+</p>
+<p class="sub-paragraph">
+  {{ TEN }}: telefone/WhatsApp {% if tenant.phone %}<span class="contract-specific">{{ tenant.phone }}</span>{% else %}{% if review_mode %}<span class="contract-omitted">pendente</span>{% endif %}{% endif %}
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA OITAVA — DA MULTA CONTRATUAL:</span> O descumprimento de qualquer cláusula do presente contrato sujeitará a parte infratora ao pagamento de multa equivalente a 3 (três) aluguéis vigentes à época da infração, sem prejuízo da rescisão contratual e das perdas e danos apurados.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA NONA — DA VISTORIA DE SAÍDA:</span>
+  {% if renovation and renovation.description %}
+  Tendo em vista a dispensa de vistoria de entrada formal prevista na Cláusula Quinta, Parágrafo Terceiro, ao término da locação será realizada vistoria de saída do imóvel, para fins de verificação do seu estado de conservação, observadas as ressalvas expressas nas Cláusulas Quarta e Quinta deste instrumento.
+  {% else %}
+  Ao término da locação será realizada vistoria de saída do imóvel, comparando-se seu estado de conservação com o registrado na vistoria de entrada prevista na Cláusula Quinta.
+  {% endif %}
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA VIGÉSIMA — DA BOA-FÉ E DA COOPERAÇÃO:</span> As partes declaram que celebram o presente contrato pautadas pelos princípios da boa-fé objetiva, transparência e cooperação mútua, comprometendo-se a resolver eventuais divergências prioritariamente pela via da negociação amigável, antes de recorrerem à via judicial.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA VIGÉSIMA PRIMEIRA — DAS DISPOSIÇÕES GERAIS:</span> Este contrato obriga as partes, seus herdeiros e sucessores. A tolerância de uma parte quanto ao descumprimento de qualquer obrigação pela outra não implicará novação, renúncia ou alteração das disposições aqui pactuadas. Qualquer alteração deste contrato somente terá validade se realizada por escrito e assinada por ambas as partes.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA VIGÉSIMA SEGUNDA — DO FORO:</span> Fica eleito o Foro da Comarca de <span class="contract-specific">{{ property.city }}, {{ property.state }}</span>, com renúncia expressa a qualquer outro, por mais privilegiado que seja, para dirimir quaisquer controvérsias oriundas do presente contrato. E, por estarem assim justas e contratadas, as partes assinam o presente instrumento em 2 (duas) vias de igual teor e forma, na presença das testemunhas abaixo identificadas, para que produza os seus efeitos jurídicos.
+</p>
+
+<p class="signature-intro">
+  <span class="contract-specific">{{ property.city }}</span>, <span class="contract-specific">{{ contract.date }}</span>.
+</p>
+
+<!-- Signature block -->
+<div class="signature-block">
+  <div class="signature-line">
+    ________________________________<br>
+    {{ LOC }}: {% if landlord.name %}<span class="contract-specific">{{ landlord.name }}</span>{% else %}{% if review_mode %}<span class="contract-omitted">pendente</span>{% endif %}{% endif %}
+  </div>
+  <div class="signature-line">
+    ________________________________<br>
+    {{ TEN }}: <span class="contract-specific">{{ tenant.name }}</span>{% if professional_registration and professional_registration.number %} — {{ professional_registration.label }} nº <span class="contract-specific">{{ professional_registration.number }}</span>{% endif %}
+  </div>
+  {% for i in range(2) %}
+  <div class="signature-line">
+    ________________________________<br>
+    Testemunha:{% if witnesses and witnesses|length > i %} <span class="contract-specific">{{ witnesses[i].name }}</span>{% if witnesses[i].cpf %} — CPF <span class="contract-specific">{{ witnesses[i].cpf }}</span>{% endif %}{% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+</body>
+</html>

@@ -17,6 +17,7 @@ Outputs per run (written to output/):
 """
 
 import importlib
+import math
 import sys
 from pathlib import Path
 
@@ -48,7 +49,17 @@ CONTRACT_TYPES = {
         "validator_module": "templates.rental.brazil.real_estate.residential.short_term.locacao_temporada_validators",
         "validator_func":   "validate_locacao_temporada",
     },
+    "commercial": {
+        "template":        "rental/brazil/real_estate/commercial/locacao_comercial.html",
+        "validator_module": "templates.rental.brazil.real_estate.commercial.locacao_comercial_validators",
+        "validator_func":   "validate_locacao_comercial",
+    },
 }
+
+
+def _parse_brl(s: str) -> float:
+    """Convert Brazilian currency string to float. e.g. '1.900,00' → 1900.0"""
+    return float(s.replace(".", "").replace(",", "."))
 
 
 # ── PDF writer ───────────────────────────────────────────────────────────────
@@ -140,12 +151,46 @@ def main() -> None:
         print(f"ERROR: Unknown contract_type '{contract_type_name}'")
         sys.exit(1)
 
-    # 4. Compute dates.end_date (residential only — seasonal gives dates directly)
+    # 4. Compute dates.end_date (residential/commercial — seasonal gives dates directly)
     if contract_type_name == "residential":
         start_date  = parse_br_date(data["dates"]["start_date"])
         term_months = data["dates"]["term_months"]
         end_date    = start_date + relativedelta(months=term_months)
         data["dates"]["end_date"] = format_br_date(end_date)
+    elif contract_type_name == "commercial":
+        dates_dict = data.get("dates", {})
+        if dates_dict.get("start_date") and dates_dict.get("term_months"):
+            start_date = parse_br_date(dates_dict["start_date"])
+            end_date   = start_date + relativedelta(months=dates_dict["term_months"])
+            dates_dict["end_date"] = format_br_date(end_date)
+
+        pricing = data.setdefault("pricing", {})
+
+        # Default late-payment fee when not set per-contract (see Cláusula
+        # Terceira §2) — kept as a plain int when whole, to avoid rendering
+        # "10.0%" for values that came back as a REAL column from sqlite.
+        pct = pricing.get("late_payment_penalty_percent")
+        if pct is None:
+            pct = 10
+        pricing["late_payment_penalty_percent"] = int(pct) if float(pct) == int(pct) else pct
+
+        # Auto-derive the abatement period (months) from the renovation's
+        # total cost and the fixed monthly credit, rather than asking for a
+        # manually-estimated count that would go stale if the cost changes.
+        renovation = data.get("renovation") or {}
+        if renovation.get("total_cost") and pricing.get("initial_discount_amount"):
+            monthly_credit = _parse_brl(pricing["initial_discount_amount"])
+            if monthly_credit > 0:
+                pricing["initial_discount_months"] = math.ceil(
+                    _parse_brl(renovation["total_cost"]) / monthly_credit
+                )
+                # Exact resume-full-rent date, so Clause 4 §4 can state a date
+                # instead of requiring a separate written-notice trigger event.
+                if dates_dict.get("start_date"):
+                    pricing["full_rent_start_date"] = format_br_date(
+                        parse_br_date(dates_dict["start_date"])
+                        + relativedelta(months=pricing["initial_discount_months"])
+                    )
 
     # 5. Validate
     validator_module = importlib.import_module(contract_type["validator_module"])
