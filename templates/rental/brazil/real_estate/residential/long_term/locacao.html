@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Contrato de Locação de Imóvel</title>
+  <style>{{ contract_css }}</style>
+</head>
+<body{% if review_mode %} class="review-mode"{% endif %}>
+
+<p class="contract-title">CONTRATO DE LOCAÇÃO DE IMÓVEL <span class="contract-specific">{{ property.category }}</span>{% if property.subtitle %} (<span class="contract-specific">{{ property.subtitle }}</span>){% endif %}</p>
+
+<p class="intro-paragraph">
+  <span class="intro-label">LOCADOR:</span>
+  <span class="contract-specific">{{ landlord.name }}</span>,
+  <span class="contract-specific">{{ landlord.nationality }}</span>,
+  <span class="contract-specific">{{ landlord.marital_status }}</span>,
+  {{ "portadora" if landlord.gender == "F" else "portador" }}{% if landlord.rg %}
+  da cédula de identidade RG nº <span class="contract-specific">{{ landlord.rg }}</span>,
+  e CPF/MF nº <span class="contract-specific">{{ landlord.cpf }}</span>{% else %}
+  {% if review_mode %}<span class="contract-omitted">RG omitido</span>{% endif %}
+  do CPF/MF nº <span class="contract-specific">{{ landlord.cpf }}</span>{% endif %}.
+</p>
+
+<p class="intro-paragraph">
+  <span class="intro-label">LOCATÁRIO:</span>
+  <span class="contract-specific">{{ tenant.name }}</span>,
+  <span class="contract-specific">{{ tenant.nationality }}</span>,
+  <span class="contract-specific">{{ tenant.marital_status }}</span>{% if tenant.occupation %},
+  <span class="contract-specific">{{ tenant.occupation }}</span>{% endif %},
+  {{ "portadora" if tenant.gender == "F" else "portador" }}{% if tenant.rg %}
+  da cédula de identidade RG nº <span class="contract-specific">{{ tenant.rg }}</span>,
+  e CPF/MF nº <span class="contract-specific">{{ tenant.cpf }}</span>{% else %}
+  {% if review_mode %}<span class="contract-omitted">RG omitido</span>{% endif %}
+  do CPF/MF nº <span class="contract-specific">{{ tenant.cpf }}</span>{% endif %}.
+</p>
+
+{% if guarantor %}
+<p class="intro-paragraph">
+  <span class="intro-label">FIADOR:</span>
+  <span class="contract-specific">{{ guarantor.name }}</span>,
+  <span class="contract-specific">{{ guarantor.nationality }}</span>,
+  <span class="contract-specific">{{ guarantor.marital_status }}</span>{% if guarantor.occupation %},
+  <span class="contract-specific">{{ guarantor.occupation }}</span>{% endif %},
+  {{ "portadora" if guarantor.gender == "F" else "portador" }}{% if guarantor.rg %}
+  da cédula de identidade RG nº <span class="contract-specific">{{ guarantor.rg }}</span>,{% else %}
+  {% if review_mode %}<span class="contract-omitted">RG omitido</span>,{% endif %}{% endif %}
+  e CPF/MF nº <span class="contract-specific">{{ guarantor.cpf }}</span>{% if guarantor.full_address %},
+  residente e domiciliad{{ "a" if guarantor.gender == "F" else "o" }} à
+  <span class="contract-specific">{{ guarantor.full_address }}</span>{% else %}
+  {% if review_mode %}, <span class="contract-omitted">Endereço omitido</span>{% endif %}{% endif %}.
+</p>
+{% else %}
+{% if review_mode %}
+<p class="contract-omitted-block">[FIADOR: omitido — sem fiador neste contrato]</p>
+{% endif %}
+{% endif %}
+
+<p class="intro-paragraph">
+  As partes acima identificadas têm entre si justo e contratado o presente contrato de locação, que se regerá pelas cláusulas e condições seguintes:
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA PRIMEIRA:</span> O objeto deste contrato de locação é o imóvel
+  <span class="contract-specific">{{ property.type }}</span>, situado à
+  <span class="contract-specific">{{ property.street_address }}, {{ property.neighborhood }}, {{ property.city }}, {{ property.state }} {{ property.zip_code }}</span>.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA SEGUNDA:</span> O prazo da presente locação é de
+  <span class="contract-specific">{{ dates.term_months }} ({{ dates.term_months_spelled_out }})</span>
+  meses, iniciando-se em <span class="contract-specific">{{ dates.start_date }}</span>
+  e encerrando-se em <span class="contract-specific">{{ dates.end_date }}</span>,
+  data em que o LOCATÁRIO se obriga a restituir o imóvel ao LOCADOR completamente livre e desocupado,
+  independente de notificação, salvo prorrogação nos termos da lei.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> Fica pactuado que o LOCATÁRIO ficará isento da multa de rescisão contratual caso devolva o imóvel após o cumprimento dos primeiros 12 (doze) meses de vigência da locação, desde que notifique o LOCADOR, por escrito, com no mínimo 30 (trinta) dias de antecedência.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> Findo o prazo estipulado no caput desta cláusula, caso o LOCATÁRIO permaneça no imóvel por mais de 30 (trinta) dias sem oposição do LOCADOR, a locação presumir-se-á prorrogada por prazo indeterminado, mantendo-se em vigor todas as demais cláusulas e condições pactuadas.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO TERCEIRO:</span> Na hipótese de prorrogação por prazo indeterminado nos termos do Parágrafo Segundo, fica expressamente assegurado ao LOCADOR o direito de denunciar o contrato a qualquer tempo (denúncia vazia), mediante notificação por escrito ao LOCATÁRIO, concedendo-lhe o prazo legal de 30 (trinta) dias para a desocupação voluntária do imóvel.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA TERCEIRA:</span>
+  {% if security_deposit.amount %}
+  Para garantia das obrigações assumidas neste contrato, o LOCATÁRIO realizará depósito caução no valor de
+  R$ <span class="contract-specific">{{ security_deposit.amount }}</span>,
+  que será devolvido ao término da locação, após a entrega das chaves e a realização do termo de vistoria final,
+  desde que não haja débitos pendentes ou danos ao imóvel.
+  {% elif guarantor %}
+  A garantia locatícia da presente locação será prestada mediante fiança, nos termos deste contrato e da legislação aplicável.
+  {% else %}
+  As partes acordam que não será exigida garantia locatícia para a presente locação, não havendo depósito caução,
+  fiador, seguro-fiança ou qualquer outra modalidade de garantia prevista em lei.
+  {% endif %}
+</p>
+{% if review_mode and not security_deposit.amount and not guarantor %}
+<p class="contract-omitted-block">[Garantia: omitida — sem caução e sem fiador]</p>
+{% endif %}
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA QUARTA:</span> O aluguel mensal, no valor de
+  R$ <span class="contract-specific">{{ pricing.rent }}</span>,
+  deverá ser pago até o dia <span class="contract-specific">{{ pricing.due_day }}</span>
+  de cada mês, no local indicado pelo LOCADOR. Será aplicado um desconto de
+  R$ <span class="contract-specific">{{ pricing.early_payment_discount }}</span>
+  se o pagamento for realizado dentro do prazo estabelecido.{% if pricing.initial_discount_months and pricing.initial_discount_amount %}
+  Além disso, para os primeiros
+  <span class="contract-specific">{{ pricing.initial_discount_months }}</span>
+  meses, será concedido um desconto mensal adicional de
+  R$ <span class="contract-specific">{{ pricing.initial_discount_amount }}</span>.{% endif %}
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> O aluguel será reajustado anualmente, de acordo com a variação do Índice de Preços ao Consumidor Amplo (IPCA) apurado no ano anterior. O reajuste será calculado com base na diferença entre o aluguel vigente e o valor atualizado pelo índice. Em caso de ausência do IPCA, o reajuste será feito conforme outro índice oficial criado pelo Governo Federal ou, em sua substituição, pela Fundação Getúlio Vargas. As partes poderão, de comum acordo, estabelecer outro critério de reajuste, desde que justo e razoável.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> O reajuste do aluguel será comunicado ao LOCATÁRIO com antecedência de trinta (30) dias, permitindo que ele se adeque às novas condições financeiras.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA QUINTA:</span> O LOCATÁRIO será responsável pelo pagamento de todas as despesas decorrentes da utilização do imóvel, incluindo, mas não se limitando a, contas de consumo de energia elétrica, água, gás, telefone, internet e demais serviços individualizados, que deverão ser pagos diretamente às empresas concessionárias competentes.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> O pagamento do IPTU incidente sobre o imóvel será de responsabilidade do
+  {% if charges.property_tax_payer == 'landlord' %}<span class="contract-specific">LOCADOR</span>.{% else %}<span class="contract-specific">LOCATÁRIO</span>.{% endif %}
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> O LOCATÁRIO é responsável pela transferência da conta de luz e água para seu nome em até 45 (quarenta e cinco) dias.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO TERCEIRO:</span> O LOCATÁRIO obriga-se a contratar e manter vigente, durante toda a vigência
+  da locação, seguro contra incêndio do imóvel, em nome do LOCADOR como beneficiário.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA SEXTA:</span> Em caso de mora no pagamento do aluguel, será aplicada multa de 2% (dois por cento) sobre o valor devido e juros mensais de 1% (um por cento) do montante devido.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA SÉTIMA:</span> Compete ao LOCATÁRIO zelar pela conservação e limpeza do imóvel, realizando, às suas expensas, as reformas e reparos ordinários necessários à sua manutenção, tais como pintura, pequenos consertos e demais serviços decorrentes do uso normal. Caberá ao LOCADOR a execução das obras de caráter estrutural ou que se tornem indispensáveis à preservação do imóvel.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> O LOCATÁRIO está obrigado a devolver o imóvel em perfeitas condições de limpeza, conservação e pintura, quando finda ou rescindida esta avença.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> O LOCATÁRIO não poderá realizar obras que alterem ou modifiquem a estrutura do imóvel locado sem prévia autorização por escrito do LOCADOR. Caso este consinta na realização das obras, estas ficarão desde logo incorporadas ao imóvel, sem que assista ao LOCATÁRIO qualquer direito de indenização ou retenção por benfeitorias. As benfeitorias removíveis poderão ser retiradas somente se não desfigurarem o imóvel locado.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO TERCEIRO:</span> O LOCATÁRIO declara receber o imóvel em perfeito estado de conservação e perfeito funcionamento.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO QUARTO:</span> É vedada a permanência no imóvel de animais que possam causar danos à estrutura ou instalações, bem como daqueles que, por sua espécie, porte ou comportamento, representem risco à segurança, saúde ou tranquilidade dos vizinhos, cabendo ao LOCATÁRIO a responsabilidade integral por quaisquer prejuízos ou incômodos decorrentes.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA OITAVA:</span> O LOCATÁRIO declara que o imóvel ora locado destina-se única e exclusivamente para o seu uso
+  {% if property.use == 'residential' %}residencial e de sua família.{% else %}comercial como <span class="contract-specific">{{ property.commercial_use_description }}</span>.{% endif %}
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> Independentemente da duração da locação ou de eventuais renovações deste contrato, o LOCATÁRIO reconhece que sua ocupação do imóvel é inteiramente provisória, conforme estipulado nas condições deste contrato de locação. O LOCATÁRIO não adquire direitos de propriedade, posse mansa e pacífica, usucapião ou qualquer outro direito sobre o imóvel apenas pelo uso contínuo, exceto aqueles direitos expressamente descritos neste documento. O objetivo desta cláusula é garantir que, mesmo após longos períodos de ocupação, o LOCATÁRIO não reivindicará qualquer direito de propriedade, comprometendo-se a devolver o imóvel ao LOCADOR ao término da locação, respeitando a sua titularidade e os acordos originalmente firmados.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> É vedada a utilização do imóvel para atividades ilícitas ou que causem incômodo à vizinhança, incluindo, mas não se limitando a, uso, armazenamento ou comercialização de drogas ilegais. O descumprimento desta cláusula constitui infração contratual grave e autoriza o LOCADOR a rescindir o contrato de imediato, sem prejuízo das demais sanções legais cabíveis.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA NONA:</span> O LOCATÁRIO não poderá sublocar, transferir ou ceder o imóvel, sendo nulo de pleno direito qualquer ato praticado com este fim sem o consentimento prévio e por escrito do LOCADOR.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA:</span> Ocorrendo sinistro que afete o imóvel, se causado por ação ou omissão do LOCATÁRIO, seus familiares, prepostos, visitantes ou animais, este responderá integralmente por todos os danos e custos de reparo/reconstrução, inclusive franquias e eventuais insuficiências de seguro, além dos aluguéis e encargos até a plena recomposição do imóvel, podendo o LOCADOR utilizar a garantia locatícia e exigir sua recomposição.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> Se o sinistro não decorrer de culpa do LOCATÁRIO e o imóvel se tornar inabitável, o LOCADOR poderá, a seu exclusivo critério, optar entre rescindir o contrato ou realizar a reconstrução. Na hipótese de rescisão, não serão devidos aluguéis a partir da data da inabitabilidade, ficando ambas as partes desobrigadas de indenizações adicionais. Caso opte pela reconstrução, a locação ficará suspensa durante as obras, sem cobrança de aluguel, sendo o prazo contratual prorrogado pelo período da suspensão.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA PRIMEIRA:</span> Em caso de desapropriação total ou parcial do imóvel locado, ficará rescindido de pleno direito o presente contrato de locação, independente de quaisquer indenizações de ambas as partes ou contratantes.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA SEGUNDA:</span>
+  {% if guarantor %}
+  Falecendo o FIADOR, o LOCATÁRIO, em 30 (trinta) dias, dará substituto idôneo que possa garantir o valor locativo e encargos do referido imóvel, ou prestará seguro fiança de empresa idônea.
+  {% else %}
+  Por não haver fiador nesta locação, esta cláusula não se aplica ao presente contrato.
+  {% endif %}
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA TERCEIRA:</span> Em caso de alienação do imóvel locado, o LOCADOR se obriga a respeitar o direito de preferência do LOCATÁRIO para adquiri-lo, devendo notificá-lo por escrito acerca das condições da venda. Caso o LOCATÁRIO não exerça seu direito no prazo legal, o LOCADOR ficará livre para alienar o imóvel a terceiros, sem qualquer obrigação adicional além daquelas previstas em lei.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA QUARTA:</span>
+  {% if guarantor %}
+  O <span class="contract-specific">FIADOR</span> e principal pagador do LOCATÁRIO responde solidariamente por todos os pagamentos descritos neste contrato bem como, não só até o final de seu prazo, como mesmo depois, até a efetiva entrega das chaves ao LOCADOR e termo de vistoria do imóvel.
+  {% else %}
+  O LOCATÁRIO responde integralmente por todos os pagamentos descritos neste contrato, não só até o final de seu prazo, como mesmo depois, até a efetiva entrega das chaves ao LOCADOR e termo de vistoria do imóvel.
+  {% endif %}
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA QUINTA:</span> É facultado ao LOCADOR, ou a seus procuradores devidamente autorizados, vistoriar o imóvel sempre que necessário para verificar o cumprimento das obrigações assumidas neste contrato, mediante aviso prévio mínimo de 48 (quarenta e oito) horas ao LOCATÁRIO, salvo em situações de urgência que possam comprometer a segurança, a integridade ou a conservação do imóvel, casos em que a vistoria poderá ser realizada de imediato.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA SEXTA:</span> O descumprimento de qualquer das cláusulas do presente contrato sujeitará o infrator ao pagamento de multa equivalente a 1 (um) aluguel mensal vigente, sem prejuízo da reparação por eventuais perdas e danos, bem como facultará à parte inocente a rescisão imediata do contrato, independentemente de notificação judicial ou extrajudicial.
+</p>
+
+{% if termination.penalty_months > 0 %}
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> Em caso de rescisão antecipada por iniciativa do LOCATÁRIO, este pagará multa proporcional ao período de cumprimento do contrato, equivalente a
+  <span class="contract-specific">{{ termination.penalty_months }} ({{ termination.penalty_months_spelled_out }})</span>
+  {% if termination.penalty_months == 1 %}mês{% else %}meses{% endif %}
+  de aluguel, calculada na proporção do tempo restante para o término do prazo contratual.
+</p>
+{% else %}
+{% if review_mode %}
+<p class="contract-omitted-block">[Multa rescisória: omitida — penalty_months = 0]</p>
+{% endif %}
+{% endif %}
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA SÉTIMA:</span> As partes contratantes obrigam-se por si, herdeiros e/ou sucessores, elegendo o Foro da Cidade de <span class="contract-specific">{{ property.city }}</span>, para a propositura de qualquer ação. E, por assim estarem justos e contratados, mandaram extrair o presente instrumento em três (03) vias, para um só efeito, assinando-as, juntamente com as testemunhas, a tudo presentes.
+</p>
+
+<p class="signature-intro">
+  <span class="contract-specific">{{ property.city }}</span>, <span class="contract-specific">{{ contract.date }}</span>.
+</p>
+
+<!-- Signature block -->
+<div class="signature-block">
+  <div class="signature-line">
+    ________________________________<br>
+    LOCADOR: <span class="contract-specific">{{ landlord.name }}</span>
+  </div>
+  <div class="signature-line">
+    ________________________________<br>
+    LOCATÁRIO: <span class="contract-specific">{{ tenant.name }}</span>
+  </div>
+  {% if guarantor %}
+  <div class="signature-line">
+    ________________________________<br>
+    FIADOR: <span class="contract-specific">{{ guarantor.name }}</span>
+  </div>
+  {% endif %}
+</div>
+
+</body>
+</html>

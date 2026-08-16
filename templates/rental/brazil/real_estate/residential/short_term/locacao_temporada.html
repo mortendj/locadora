@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Contrato de Locação para Temporada</title>
+  <style>{{ contract_css }}</style>
+</head>
+<body{% if review_mode %} class="review-mode"{% endif %}>
+
+<p class="contract-title">CONTRATO DE LOCAÇÃO PARA TEMPORADA</p>
+
+<p class="intro-paragraph">
+  <span class="intro-label">LOCADOR:</span>
+  <span class="contract-specific">{{ landlord.name }}</span>,
+  <span class="contract-specific">{{ landlord.nationality }}</span>,
+  <span class="contract-specific">{{ landlord.marital_status }}</span>,
+  {{ "portadora" if landlord.gender == "F" else "portador" }}{% if landlord.rg %}
+  da cédula de identidade RG nº <span class="contract-specific">{{ landlord.rg }}</span>,
+  e CPF/MF nº <span class="contract-specific">{{ landlord.cpf }}</span>{% else %}
+  {% if review_mode %}<span class="contract-omitted">RG omitido</span>{% endif %}
+  do CPF/MF nº <span class="contract-specific">{{ landlord.cpf }}</span>{% endif %}{% if landlord.phone or landlord.email %},
+  contato{% if landlord.phone %} telefone <span class="contract-specific">{{ landlord.phone }}</span>{% endif %}{% if landlord.phone and landlord.email %} e{% endif %}{% if landlord.email %} e-mail <span class="contract-specific">{{ landlord.email }}</span>{% endif %}{% endif %}.
+</p>
+
+<p class="intro-paragraph">
+  <span class="intro-label">LOCATÁRIO:</span>
+  {% if tenant.type == 'company' %}
+  <span class="contract-specific">{{ tenant.company_name }}</span>,
+  pessoa jurídica inscrita no CNPJ sob o nº <span class="contract-specific">{{ tenant.cnpj }}</span>,
+  com sede em <span class="contract-specific">{{ tenant.registered_address }}</span>,
+  neste ato representada por seu representante legal,
+  <span class="contract-specific">{{ tenant.representative.name }}</span>,
+  <span class="contract-specific">{{ tenant.representative.nationality }}</span>,
+  <span class="contract-specific">{{ tenant.representative.marital_status }}</span>{% if tenant.representative.occupation %},
+  <span class="contract-specific">{{ tenant.representative.occupation }}</span>{% endif %},
+  {{ "portadora" if tenant.representative.gender == "F" else "portador" }}{% if tenant.representative.rg %}
+  da cédula de identidade RG nº <span class="contract-specific">{{ tenant.representative.rg }}</span>,{% else %}
+  {% if review_mode %}<span class="contract-omitted">RG omitido</span>,{% endif %}{% endif %}
+  e CPF/MF nº <span class="contract-specific">{{ tenant.representative.cpf }}</span>.
+  {% else %}
+  <span class="contract-specific">{{ tenant.name }}</span>,
+  <span class="contract-specific">{{ tenant.nationality }}</span>,
+  <span class="contract-specific">{{ tenant.marital_status }}</span>{% if tenant.occupation %},
+  <span class="contract-specific">{{ tenant.occupation }}</span>{% endif %},
+  {{ "portadora" if tenant.gender == "F" else "portador" }}{% if tenant.rg %}
+  da cédula de identidade RG nº <span class="contract-specific">{{ tenant.rg }}</span>,
+  e CPF/MF nº <span class="contract-specific">{{ tenant.cpf }}</span>{% else %}
+  {% if review_mode %}<span class="contract-omitted">RG omitido</span>{% endif %}
+  do CPF/MF nº <span class="contract-specific">{{ tenant.cpf }}</span>{% endif %}{% if tenant.full_address %},
+  residente e domiciliad{{ "a" if tenant.gender == "F" else "o" }} à
+  <span class="contract-specific">{{ tenant.full_address }}</span>{% endif %}.
+  {% endif %}
+</p>
+
+<p class="intro-paragraph">
+  As partes acima identificadas têm entre si justo e acertado o presente contrato de locação para temporada de imóvel, que se regerá pelas cláusulas e condições seguintes:
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA PRIMEIRA:</span> O objeto deste contrato de locação é o imóvel situado à
+  <span class="contract-specific">{{ property.street_address }}, {{ property.neighborhood }}, {{ property.city }}, {{ property.state }} {{ property.zip_code }}</span>,
+  de propriedade do LOCADOR.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> O imóvel objeto deste contrato será locado para temporada, destinado exclusivamente a atividades de lazer.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> O LOCATÁRIO declara que tomou prévio conhecimento da situação atual do imóvel, bem como do seu estado de conservação, e que este se apresenta em perfeitas condições de uso.
+</p>
+
+{% set bedrooms_included = property.configurations[stay.configuration] if property.configurations and stay and stay.configuration in property.configurations else [] %}
+{% set total_bedrooms = property.bedrooms|length if property.bedrooms else 0 %}
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO TERCEIRO:</span>
+  {% if bedrooms_included|length == 0 %}
+  A presente locação não inclui pernoite, sendo destinada exclusivamente ao uso diurno do imóvel e de suas áreas comuns, sem acesso aos dormitórios.
+  {% elif total_bedrooms and bedrooms_included|length < total_bedrooms %}
+  A presente locação inclui pernoite, com acesso aos dormitórios especificados no Anexo I deste contrato, permanecendo os demais dormitórios do imóvel trancados e fora do uso do LOCATÁRIO durante todo o período da locação.
+  {% else %}
+  A presente locação inclui pernoite, com acesso à totalidade dos dormitórios do imóvel.
+  {% endif %}
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO QUARTO:</span> O inventário completo dos móveis e utensílios que guarnecem o imóvel, nos termos do art. 48, parágrafo único, da Lei 8.245/91, consta do Anexo I, parte integrante e inseparável deste contrato.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA SEGUNDA:</span> O prazo da presente locação é de
+  <span class="contract-specific">{{ stay.check_in_date }}</span>{% if stay.check_in_time %}, às <span class="contract-specific">{{ stay.check_in_time }}</span> horas{% endif %},
+  a <span class="contract-specific">{{ stay.check_out_date }}</span>{% if stay.check_out_time %}, às <span class="contract-specific">{{ stay.check_out_time }}</span> horas{% endif %},
+  não podendo, em nenhuma hipótese, exceder o período máximo de 90 (noventa) dias previsto em lei para a locação por temporada.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA TERCEIRA:</span> O preço certo e ajustado para o período de locação será de
+  R$ <span class="contract-specific">{{ pricing.total_amount }}</span>
+  (<span class="contract-specific">{{ pricing.total_amount_spelled_out }}</span>){% if pricing.number_of_nights and pricing.nightly_rate %},
+  correspondente a <span class="contract-specific">{{ pricing.number_of_nights }}</span> diária(s) de
+  R$ <span class="contract-specific">{{ pricing.nightly_rate }}</span> cada{% endif %}.
+</p>
+
+{% if pricing.cleaning_fee %}
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> Além do valor da locação, será cobrada uma taxa única de limpeza de
+  R$ <span class="contract-specific">{{ pricing.cleaning_fee }}</span>, devida e paga no momento da entrada no imóvel, juntamente com o saldo remanescente da locação, não sendo restituída em hipótese alguma, por referir-se a serviço necessário após o uso do imóvel.
+</p>
+{% endif %}
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> O atraso no pagamento de qualquer valor devido acarretará multa de 10% (dez por cento) sobre o valor devido, além de juros de 1% (um por cento) ao mês e correção monetária.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA QUARTA:</span> O LOCATÁRIO pagará, a título de sinal de garantia da locação, o valor de
+  R$ <span class="contract-specific">{{ pricing.down_payment_amount }}</span>{% if pricing.down_payment_due_date %}, até a data de <span class="contract-specific">{{ pricing.down_payment_due_date }}</span>{% endif %},
+  {% if landlord.bank_details %}mediante depósito bancário na conta do LOCADOR: banco <span class="contract-specific">{{ landlord.bank_details.bank }}</span>,
+  agência <span class="contract-specific">{{ landlord.bank_details.branch }}</span>, conta nº <span class="contract-specific">{{ landlord.bank_details.account }}</span>,
+  titular <span class="contract-specific">{{ landlord.name }}</span>, CPF <span class="contract-specific">{{ landlord.cpf }}</span>{% else %}no local e pela forma indicados pelo LOCADOR{% if review_mode %}<span class="contract-omitted-block"> [dados bancários do LOCADOR: não informados]</span>{% endif %}{% endif %}.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> O LOCATÁRIO obriga-se a devolver ao LOCADOR o presente contrato devidamente preenchido e assinado, por meio eletrônico (e-mail, WhatsApp ou similar), juntamente com o comprovante de depósito do sinal, como condição para a confirmação definitiva da reserva.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> O valor do sinal será abatido do valor total da locação, devendo o saldo remanescente de
+  R$ <span class="contract-specific">{{ pricing.balance_amount }}</span>{% if pricing.cleaning_fee %}, mais a taxa de limpeza,{% endif %}
+  ser pago no ato da entrada no imóvel{% if pricing.balance_due_date %}, com vencimento em <span class="contract-specific">{{ pricing.balance_due_date }}</span>{% endif %},
+  {% if landlord.bank_details %}na mesma conta indicada na Cláusula Quarta{% else %}em dinheiro ou meio previamente acordado{% endif %}.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA QUINTA:</span> Em caso de desistência da locação por parte do LOCATÁRIO antes do início da estadia, fica ajustado que:
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> Se a desistência for comunicada com antecedência superior a 30 (trinta) dias da data de entrada, o LOCATÁRIO perderá
+  <span class="contract-specific">{{ termination.forfeit_percent_30_days_or_more | default(50) }}%</span> dos valores já pagos até o momento da desistência, sendo o restante restituído.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> Se a desistência for comunicada com antecedência igual ou inferior a 30 (trinta) dias da data de entrada, o LOCATÁRIO perderá
+  <span class="contract-specific">{{ termination.forfeit_percent_under_30_days | default(100) }}%</span> de todos os valores já pagos até o momento da desistência, incluindo eventual saldo já quitado, nada havendo a ser restituído nesse percentual.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO TERCEIRO:</span> Em qualquer hipótese de desistência após o início da locação, não haverá devolução de valores já pagos, conforme disposto na Cláusula Décima, ressalvado o disposto na Cláusula Oitava, Parágrafo Terceiro, para defeitos graves não imputáveis ao LOCATÁRIO.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA SEXTA:</span> A ocupação do imóvel destina-se exclusivamente à temporada, não caracterizando residência fixa, sendo de uso exclusivo do LOCATÁRIO e de seus acompanhantes.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> O LOCATÁRIO deverá observar o limite máximo de ocupantes no imóvel, qual seja de
+  {% if stay.max_guests %}<span class="contract-specific">{{ stay.max_guests }}</span> pessoas, incluindo adultos e crianças, independentemente do número de camas e colchões existentes.{% else %}{% if review_mode %}<span class="contract-omitted-block">[limite de ocupantes: não informado]</span>{% endif %}{% endif %}
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> Em caso de ocupação superior ao limite estabelecido, sem prévia autorização do LOCADOR, este poderá, a seu critério, exigir a desocupação imediata dos hóspedes excedentes, sob pena de rescisão do contrato nos termos da Cláusula Nona{% if pricing.extra_guest_fee_per_day %}, sem prejuízo da cobrança de valor adicional de R$ <span class="contract-specific">{{ pricing.extra_guest_fee_per_day }}</span> por pessoa excedente, por dia, devido de imediato ao LOCADOR{% endif %}. Visitantes que pernoitarem no imóvel serão considerados hóspedes para fins desta cláusula.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO TERCEIRO:</span> É proibida a realização de festas, eventos ou celebrações de caráter comercial no imóvel, incluindo, mas não se limitando a, eventos com cobrança de ingresso, venda de bebidas ou alimentos a terceiros, ou qualquer atividade que caracterize exploração comercial do espaço. Reuniões familiares e celebrações particulares do LOCATÁRIO e de seus acompanhantes, sem caráter comercial, são permitidas, desde que respeitado o limite de ocupantes previsto no Parágrafo Primeiro e as demais disposições deste contrato.
+</p>
+
+{% if property.parking_capacity %}
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO QUARTO:</span> O imóvel dispõe de vagas de estacionamento organizadas para até <span class="contract-specific">{{ property.parking_capacity }}</span> veículos. Eventual excedente de veículos deverá ser estacionado ao longo da via de acesso à propriedade, de forma a não obstruir a via, o acesso de terceiros ou imóveis vizinhos, sendo o LOCATÁRIO inteiramente responsável por quaisquer danos, acidentes ou transtornos decorrentes do estacionamento inadequado de veículos por si, seus acompanhantes ou visitantes.
+</p>
+{% endif %}
+
+{% set security_deposit = security_deposit if security_deposit is defined else {} %}
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA SÉTIMA:</span>
+  {% if security_deposit.amount %}
+  Para garantia de eventuais danos causados ao imóvel, à mobília e aos utensílios, o LOCATÁRIO prestará caução no valor de
+  R$ <span class="contract-specific">{{ security_deposit.amount }}</span>, a ser {% if landlord.bank_details %}depositada na conta do LOCADOR indicada na Cláusula Quarta{% else %}entregue ao LOCADOR{% endif %} no ato da entrada.
+  {% else %}
+  As partes acordam que não será exigida garantia adicional (caução) para a presente locação por temporada.
+  {% endif %}
+</p>
+{% if security_deposit.amount %}
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> A caução será devolvida ao LOCATÁRIO após a vistoria de saída, desde que não sejam constatados danos, extravios ou pendências financeiras. Constatados danos ou perdas, o LOCADOR poderá reter ou compensar o valor da caução, parcial ou integralmente, para ressarcimento, sem prejuízo de cobrança complementar caso os danos superem o valor da caução.
+</p>
+{% else %}
+{% if review_mode %}<p class="contract-omitted-block">[garantia: omitida — sem caução]</p>{% endif %}
+{% endif %}
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA OITAVA:</span> O LOCATÁRIO declara ter vistoriado o imóvel na entrada, juntamente com o LOCADOR ou pessoa de sua confiança, constatando que este se encontra em bom estado de conservação, adequado ao uso a que se destina.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> No ato da entrada será realizada vistoria conjunta, na qual poderão ser anotados, no corpo deste contrato ou em anexo, quaisquer vícios aparentes, avarias ou defeitos já existentes, a pedido do LOCATÁRIO.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> No momento da saída será realizada nova vistoria, comparando-se as condições do imóvel, dos móveis e dos utensílios com a vistoria inicial e o inventário referido no Anexo I. Quaisquer avarias, extravios ou danos causados pelo LOCATÁRIO ou por seus acompanhantes serão de sua inteira responsabilidade.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO TERCEIRO:</span> Caso surjam problemas estruturais ou defeitos graves no imóvel, não atribuíveis ao LOCATÁRIO nem decorrentes de caso fortuito ou força maior, que impeçam o uso regular do imóvel, o LOCADOR deverá providenciar o reparo em prazo razoável ou, não sendo isso possível, devolver ao LOCATÁRIO o valor proporcional ao período em que o imóvel não pôde ser utilizado.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO QUARTO:</span> Caso o imóvel se torne total ou parcialmente inutilizável em razão de caso fortuito ou força maior (tais como eventos climáticos extremos, desastres naturais ou determinação de autoridade pública), o LOCADOR não será responsável por indenizações, reparos imediatos ou custos adicionais de qualquer espécie, limitando-se sua obrigação à devolução proporcional dos valores já pagos referentes ao período em que o imóvel não pôde ser efetivamente utilizado.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO QUINTO:</span> É parte integrante deste contrato o auto de vistoria e inventário, assinado pelo LOCADOR e pelo LOCATÁRIO, com a descrição das reais condições do imóvel e dos itens relacionados na Cláusula Primeira.
+</p>
+
+{% if rules and rules.allow_buyer_showings %}
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEXTO:</span> O LOCADOR poderá, mediante prévia comunicação ao LOCATÁRIO, vistoriar o imóvel durante a locação sempre que entender necessário, inclusive para mostrá-lo a eventuais interessados em adquiri-lo, caso deseje colocá-lo à venda. As vistorias e visitas deverão ser previamente combinadas entre as partes e realizadas entre 8h e 18h.
+</p>
+{% endif %}
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA NONA:</span> O descumprimento de qualquer das cláusulas deste contrato pelo LOCATÁRIO autoriza o LOCADOR a considerar rescindida a locação, independentemente de notificação judicial, podendo exigir a desocupação imediata do imóvel e cobrar judicialmente os valores devidos.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> Em caso de descumprimento de qualquer obrigação contratual pelo LOCATÁRIO, distinta do mero atraso no pagamento já penalizado nos termos da Cláusula Terceira, Parágrafo Segundo, será devida multa compensatória equivalente a 20% (vinte por cento) sobre o valor total da locação, sem prejuízo de:
+</p>
+<p class="sub-paragraph">a) cobrança de diárias vencidas e vincendas;</p>
+<p class="sub-paragraph">b) cobrança de danos materiais causados ao imóvel, à mobília ou aos utensílios;</p>
+<p class="sub-paragraph">c) retenção ou compensação do sinal e da caução, quando existente.</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA:</span> O presente contrato poderá ser rescindido por mútuo acordo entre as partes, mediante aviso prévio de
+  <span class="contract-specific">{{ termination.notice_days }}</span> dias.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> Caso o LOCATÁRIO encerre a estadia antes do prazo previsto neste contrato, por qualquer motivo, não haverá devolução de valores já pagos, sejam eles referentes a diárias, sinal, taxa de limpeza ou caução, ressalvada a hipótese prevista na Cláusula Oitava, Parágrafo Terceiro.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA PRIMEIRA:</span> A permanência do LOCATÁRIO e/ou de seus acompanhantes no imóvel após o horário de saída ajustado
+  (<span class="contract-specific">{{ stay.check_out_date }}</span>{% if stay.check_out_time %}, às <span class="contract-specific">{{ stay.check_out_time }}</span> horas{% endif %})
+  implicará o pagamento da diária{% if pricing.nightly_rate %} (R$ <span class="contract-specific">{{ pricing.nightly_rate }}</span>){% endif %} em dobro, por cada dia ou fração de dia excedente, sem prejuízo da responsabilidade do LOCATÁRIO por eventuais perdas e danos decorrentes do atraso na entrega do imóvel a terceiros ou às atividades do LOCADOR.
+</p>
+
+{% set allow_pets = rules.allow_pets if rules else None %}
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA SEGUNDA:</span>
+  {% if allow_pets %}
+  Será permitida a presença de animais de estimação de pequeno porte no imóvel, mediante prévia comunicação ao LOCADOR, obrigando-se o LOCATÁRIO a assumir inteira responsabilidade por quaisquer danos causados pelo animal ao imóvel, à mobília, aos utensílios ou às áreas comuns, bem como a manter o imóvel limpo e higienizado, inclusive quanto a dejetos e odores.
+  {% else %}
+  Não será permitida, em nenhuma hipótese, a presença de animais de estimação no imóvel, de qualquer porte, ainda que transitoriamente.
+  {% endif %}
+</p>
+{% if review_mode and allow_pets != true and allow_pets != false %}<p class="contract-omitted-block">[política de animais de estimação: não declarada — assumido "não permitido"]</p>{% endif %}
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA TERCEIRA:</span>
+  {% if pricing.utilities_included %}
+  O valor da locação inclui as despesas de água, luz, gás, condomínio, IPTU, internet e TV a cabo (quando houver), bem como os demais encargos ordinários do imóvel.
+  {% else %}
+  O valor da locação não inclui despesas de consumo, tais como água, luz, gás e telefone, bem como despesas ordinárias de condomínio, que ficarão a cargo do LOCATÁRIO durante o período da locação.
+  {% endif %}
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA QUARTA:</span> Todas as multas e encargos decorrentes do não pagamento ou do atraso no pagamento das taxas e valores mencionados neste contrato, bem como as obrigações resultantes de ato ou omissão do LOCATÁRIO perante terceiros, o condomínio ou o poder público, serão de sua inteira responsabilidade.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA QUINTA:</span> O LOCADOR não se responsabiliza por:
+</p>
+<p class="sub-paragraph">a) objetos deixados pelo LOCATÁRIO ou seus acompanhantes no imóvel;</p>
+<p class="sub-paragraph">b) furtos, roubos ou quaisquer danos aos bens do LOCATÁRIO ou de seus acompanhantes;</p>
+<p class="sub-paragraph">c) danos decorrentes de caso fortuito ou força maior, tais como eventos climáticos extremos ou desastres naturais, ressalvado o disposto na Cláusula Oitava, Parágrafo Quarto, quanto à devolução proporcional de valores;</p>
+<p class="sub-paragraph">d) falta ou interrupção de água, energia elétrica, gás ou outros serviços, quando decorrente de responsabilidade exclusiva da concessionária ou do condomínio.</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA SEXTA:</span> O LOCATÁRIO se obriga a:
+</p>
+<p class="sub-paragraph">a) usar o imóvel exclusivamente para fins de temporada, não podendo alterar sua destinação;</p>
+<p class="sub-paragraph">b) zelar pela conservação do imóvel e de seus pertences;</p>
+<p class="sub-paragraph">c) não fazer modificações na estrutura do imóvel sem autorização do LOCADOR;</p>
+<p class="sub-paragraph">d) devolver o imóvel ao final do contrato no estado em que o recebeu, salvo deteriorações decorrentes do seu uso normal;</p>
+<p class="sub-paragraph">e) cumprir o regulamento interno do condomínio, se houver;</p>
+<p class="sub-paragraph">f) permitir a vistoria do imóvel pelo LOCADOR, mediante prévio aviso;</p>
+<p class="sub-paragraph">g) comunicar imediatamente ao LOCADOR quaisquer ocorrências imprevistas no imóvel ou em seus utensílios;</p>
+<p class="sub-paragraph">h) responsabilizar-se por qualquer dano ao imóvel ou a bens que o guarnecem, causado por si ou por pessoas de sua convivência.</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA SÉTIMA:</span> Fica vedada a sublocação total ou parcial do imóvel.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> O LOCATÁRIO não poderá emprestar, ceder ou franquear o imóvel a terceiros, sob pena de rescisão imediata do contrato e aplicação da multa prevista na Cláusula Nona.
+</p>
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA OITAVA:</span> Fazem parte integrante deste contrato os e-mails, mensagens de WhatsApp, SMS ou outras comunicações eletrônicas trocadas entre LOCADOR e LOCATÁRIO antes e durante a vigência da locação, desde que se refiram à presente contratação e tenham resposta ou confirmação de ciência da outra parte, podendo ser utilizadas como prova complementar de cláusulas, condições ou combinações não expressamente previstas neste instrumento.
+</p>
+
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO ÚNICO:</span> Quaisquer alterações, acordos, transações ou novações relativos a este contrato somente serão a ele incorporados quando realizados por escrito, o que inclui as comunicações eletrônicas referidas no caput desta cláusula.
+</p>
+
+{% if property.water_hazards %}
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA DÉCIMA NONA:</span> O LOCATÁRIO declara ter sido previamente informado de que o imóvel possui as seguintes áreas que apresentam risco de afogamento ou acidente, especialmente para crianças:
+</p>
+{% for hazard in property.water_hazards %}
+<p class="sub-paragraph">{{ "abcdefghijklmnopqrstuvwxyz"[loop.index0] }}) <span class="contract-specific">{{ hazard }}</span></p>
+{% endfor %}
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO PRIMEIRO:</span> O LOCATÁRIO é o único e exclusivo responsável pela supervisão constante de crianças e demais pessoas sob sua guarda durante toda a estadia, especialmente nas proximidades das áreas de risco acima descritas, não podendo, em nenhuma hipótese, atribuir tal responsabilidade ao LOCADOR, mesmo que existam cercas, portões, coberturas ou qualquer outro dispositivo de proteção nessas áreas, os quais não substituem a supervisão direta e constante.
+</p>
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO SEGUNDO:</span> O LOCADOR não se responsabiliza por afogamentos, quedas ou quaisquer outros acidentes ou danos pessoais ocorridos nas áreas de risco acima descritas, decorrentes de falta de supervisão ou do uso inadequado dessas áreas pelo LOCATÁRIO, seus acompanhantes ou visitantes.
+</p>
+<p class="sub-paragraph">
+  <span class="sub-label">PARÁGRAFO TERCEIRO:</span> O LOCATÁRIO obriga-se a manter fechados quaisquer portões, cercas ou demais barreiras de proteção existentes nas áreas de risco, quando não estiverem em uso, e a impedir o acesso de crianças desacompanhadas a essas áreas.
+</p>
+{% endif %}
+
+<p class="clause-paragraph">
+  <span class="clause-label">CLÁUSULA VIGÉSIMA:</span> Para dirimir quaisquer controvérsias oriundas deste contrato, as partes elegem o foro da Comarca de <span class="contract-specific">{{ property.city }}</span>, com renúncia a qualquer outro por mais privilegiado que seja, ficando estipulado que a parte vencida em eventual demanda judicial pagará à parte vencedora honorários de sucumbência correspondentes a 20% (vinte por cento) sobre o valor da causa, sem prejuízo dos demais encargos legais. E, por estarem assim justos e contratados, assinam o presente instrumento em duas vias de igual teor e forma, na presença das testemunhas abaixo assinadas.
+</p>
+
+<p class="signature-intro">
+  <span class="contract-specific">{{ property.city }}</span>, <span class="contract-specific">{{ contract.date }}</span>.
+</p>
+
+<!-- Signature block -->
+<div class="signature-block">
+  <div class="signature-line">
+    ________________________________<br>
+    LOCADOR: <span class="contract-specific">{{ landlord.name }}</span>
+  </div>
+  <div class="signature-line">
+    ________________________________<br>
+    LOCATÁRIO: <span class="contract-specific">{{ tenant.company_name if tenant.type == 'company' else tenant.name }}</span>
+  </div>
+  {% if tenant.type == 'company' %}
+  <div class="signature-line">
+    ________________________________<br>
+    p/ representante legal: <span class="contract-specific">{{ tenant.representative.name }}</span>
+  </div>
+  {% endif %}
+  {% for i in range(2) %}
+  <div class="signature-line">
+    ________________________________<br>
+    Testemunha:{% if witnesses and witnesses|length > i %} <span class="contract-specific">{{ witnesses[i].name }}</span>{% if witnesses[i].cpf %} — CPF <span class="contract-specific">{{ witnesses[i].cpf }}</span>{% endif %}{% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="annex-page">
+<p class="annex-heading">ANEXO I — INVENTÁRIO DO IMÓVEL</p>
+
+{% set ns = namespace(bedroom_items=[]) %}
+{% for key in bedrooms_included %}
+{% if property.bedrooms and key in property.bedrooms %}
+{% set ns.bedroom_items = ns.bedroom_items + [property.bedrooms[key]] %}
+{% endif %}
+{% endfor %}
+{% set inventory_items = (property.common_areas if property.common_areas else []) + ns.bedroom_items %}
+
+{% if inventory_items %}
+<p class="sub-paragraph">
+  Nos termos do art. 48, parágrafo único, da Lei 8.245/91, o imóvel é entregue mobiliado e guarnecido pelos seguintes itens, todos em bom estado de conservação e funcionamento:
+</p>
+{% for item in inventory_items %}
+<p class="sub-paragraph">{{ "abcdefghijklmnopqrstuvwxyz"[loop.index0] }}) <span class="contract-specific">{{ item }}</span></p>
+{% endfor %}
+<p class="sub-paragraph">
+  O LOCATÁRIO declara ter ciência da existência e do bom estado dos itens acima, comprometendo-se a devolvê-los nas mesmas condições em que os recebeu, salvo desgaste decorrente do uso normal.
+</p>
+{% else %}
+{% if review_mode %}<p class="contract-omitted-block">[inventário do imóvel: não informado]</p>{% endif %}
+{% endif %}
+</div>
+
+</body>
+</html>

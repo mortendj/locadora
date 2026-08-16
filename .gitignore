@@ -1,0 +1,17 @@
+*.bak
+output/
+__pycache__/
+*.pyc
+*.pyo
+
+# Local SQLite database — contains real personal data and property
+# addresses, must never be committed.
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Any local dump of the database (see planned snapshot_export()) — same
+# reason as above, may contain real personal data / addresses.
+snapshots/
+exports/

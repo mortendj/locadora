@@ -1,0 +1,129 @@
+@page {
+  size: A4;
+  margin: 1.8cm;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.3;
+  margin: 0;
+}
+
+p.contract-title {
+  text-align: center;
+  font-size: 12pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 0;
+  margin-bottom: 0.6em;
+}
+
+/* LOCADOR, LOCATÁRIO, FIADOR intro lines */
+.intro-paragraph {
+  font-size: 10.5pt;
+  text-align: justify;
+  margin-left: 0;
+  text-indent: 0;
+  margin-top: 0;
+  margin-bottom: 0.25em;
+}
+
+/* Bold word at start: LOCADOR:, LOCATÁRIO:, FIADOR: */
+.intro-label {
+  font-weight: bold;
+}
+
+/* Clause paragraphs: CLÁUSULA PRIMEIRA: text inline */
+.clause-paragraph {
+  font-size: 10.5pt;
+  text-align: justify;
+  margin-left: 0;
+  text-indent: 0;
+  margin-top: 0.5em;
+  margin-bottom: 0.25em;
+}
+
+/* Bold inline clause label: CLÁUSULA PRIMEIRA: */
+.clause-label {
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+/* Sub-paragraphs: PARÁGRAFO PRIMEIRO: text inline, indented */
+.sub-paragraph {
+  font-size: 10.5pt;
+  text-align: justify;
+  margin-left: 1.2cm;
+  text-indent: 0;
+  margin-top: 0;
+  margin-bottom: 0.25em;
+}
+
+/* Bold inline sub-paragraph label: PARÁGRAFO PRIMEIRO: */
+.sub-label {
+  font-weight: bold;
+}
+
+/* Closing paragraph (city, date) */
+.signature-intro {
+  font-size: 10.5pt;
+  text-align: justify;
+  margin-top: 0.5em;
+  margin-bottom: 0;
+}
+
+/* Signature block */
+.signature-block {
+  margin-top: 2em;
+  font-size: 10.5pt;
+  text-align: left;
+}
+
+.signature-line {
+  margin-top: 1.5em;
+}
+
+/* Anexo (attachment) pages — start on a fresh page, separate from the
+   signature block that closes the main body of the contract */
+.annex-page {
+  page-break-before: always;
+}
+
+.annex-heading {
+  text-align: center;
+  font-size: 11pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 0;
+  margin-bottom: 0.6em;
+}
+
+/* ============================================================
+   REVIEW MODE — highlights contract-specific fields in red
+   Activated when <body class="review-mode"> is present.
+   Pass review_mode=True from main.py to enable.
+   ============================================================ */
+
+.review-mode .contract-specific {
+    color: #cc0000;
+}
+
+/* Omitted fields — inline strikethrough red
+   Used for fields that would have been part of a sentence
+   but were absent from the data, e.g. RG omitido           */
+.review-mode .contract-omitted {
+    color: #cc0000;
+    text-decoration: line-through;
+}
+
+/* Omitted blocks — red italic label, no strikethrough
+   Used for entire paragraphs that are absent from the
+   contract, e.g. fiador block, garantia, multa             */
+.review-mode .contract-omitted-block {
+    color: #cc0000;
+    font-style: italic;
+    margin-bottom: 0.25em;
+}
+
+
