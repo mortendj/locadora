@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Locadora Viewer{% endblock %}
+{% block content %}
+<h1>Locadora Viewer</h1>
+<p class="muted">Database: {{ db_path }}</p>
+<ul>
+  <li><a href="/people">People</a> — {{ people_count }}</li>
+  <li><a href="/properties">Properties</a> — {{ properties_count }}</li>
+  <li><a href="/contracts">Contracts</a> — {{ contracts_count }}</li>
+</ul>
+{% endblock %}

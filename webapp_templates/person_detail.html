@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% import "_macros.html" as macros %}
+{% block title %}{{ person.name or person.company_name }} — Locadora Viewer{% endblock %}
+{% block content %}
+<p><a href="/people">&larr; back to people</a></p>
+<h1>{{ person.name or person.company_name }}</h1>
+{{ macros.render_dict(person) }}
+{% endblock %}

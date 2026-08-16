@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}People — Locadora Viewer{% endblock %}
+{% block content %}
+<h1>People</h1>
+<table class="list-table">
+  <tr><th>ID</th><th>Name</th><th>Type</th><th>CPF / CNPJ</th></tr>
+  {% for p in people %}
+  <tr>
+    <td><a href="/people/{{ p.id }}">{{ p.id }}</a></td>
+    <td><a href="/people/{{ p.id }}">{{ p.name or p.company_name }}</a></td>
+    <td>{{ p.type or "—" }}</td>
+    <td>{{ p.cpf or p.cnpj or "—" }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="4" class="muted">No people in this database yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

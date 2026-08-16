@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% import "_macros.html" as macros %}
+{% block title %}Contract {{ contract_id }} — Locadora Viewer{% endblock %}
+{% block content %}
+<p><a href="/contracts">&larr; back to contracts</a></p>
+<h1>Contract #{{ contract_id }} <span class="badge">{{ contract.contract_type }}</span></h1>
+<p>
+  <a class="button" href="/contracts/{{ contract_id }}/render?mode=preview" target="_blank">View rendered contract</a>
+  <a class="button" href="/contracts/{{ contract_id }}/render?mode=review" target="_blank">View rendered contract (review mode)</a>
+</p>
+{{ macros.render_dict(contract) }}
+{% endblock %}

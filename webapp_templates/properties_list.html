@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Properties — Locadora Viewer{% endblock %}
+{% block content %}
+<h1>Properties</h1>
+<table class="list-table">
+  <tr><th>ID</th><th>Category</th><th>Address</th><th>Use</th></tr>
+  {% for p in properties %}
+  <tr>
+    <td><a href="/properties/{{ p.id }}">{{ p.id }}</a></td>
+    <td><a href="/properties/{{ p.id }}">{{ p.category or "—" }}</a></td>
+    <td>{{ p.street_address or "—" }}{% if p.city %}, {{ p.city }}{% endif %}</td>
+    <td>{{ p.use or "—" }}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="4" class="muted">No properties in this database yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

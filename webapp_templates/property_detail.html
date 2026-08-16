@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% import "_macros.html" as macros %}
+{% block title %}{{ property.category }} — Locadora Viewer{% endblock %}
+{% block content %}
+<p><a href="/properties">&larr; back to properties</a></p>
+<h1>{{ property.category }}{% if property.subtitle %} ({{ property.subtitle }}){% endif %}</h1>
+{{ macros.render_dict(property) }}
+{% endblock %}

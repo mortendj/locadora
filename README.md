@@ -54,6 +54,19 @@ Erases whatever is currently in the target database and replaces it with the sna
 
 Verified end-to-end 2026-08-16: backed up the real database, deleted the database file entirely to simulate total loss, restored from the snapshot, and confirmed every contract re-rendered identically to before.
 
+Every backup is also copied to a Dropbox-synced folder automatically (see `LOCADORA_BACKUP_DIR` in `backup_db.py` if Dropbox lives somewhere other than `~/Dropbox` on your machine) - `snapshots/` stays the primary, gitignored copy inside the project.
+
+## Web viewer
+
+A read-only FastAPI app for browsing people, properties, and contracts as database rows, plus viewing the full rendered contract (same templates and rendering pipeline the CLI uses - the web viewer can never show something different from what `main.py` would actually generate).
+
+```bash
+CONTRACTER_DB=/path/to/contracter.db uvicorn webapp:app --reload   # real data
+uvicorn webapp:app --reload                                         # demo data (default)
+```
+
+Then open `http://127.0.0.1:8000/`. Routes: `/people`, `/properties`, `/contracts` (list + detail), and `/contracts/{id}/render?mode=preview|review` for the full rendered contract.
+
 ## Design decisions worth knowing about
 
 - **Demo data by default, real data only by explicit opt-in.** `db.py` picks its database file from the `CONTRACTER_DB` environment variable; unset, it falls back to `contracter_demo.db`.
@@ -81,13 +94,12 @@ Verified end-to-end 2026-08-16: backed up the real database, deleted the databas
 
 ## Roadmap
 
-- A read-only FastAPI viewer over the same database.
 - Rental contract types beyond real estate (vehicles, equipment), and beyond Brazil.
   The data model was built with that in mind, though none of it exists yet.
 
 ## Tech stack
 
-Python · Jinja2 · xhtml2pdf · SQLite (stdlib `sqlite3`, no ORM)
+Python · Jinja2 · xhtml2pdf · SQLite (stdlib `sqlite3`, no ORM) · FastAPI
 
 ## License
 

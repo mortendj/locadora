@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}Locadora Viewer{% endblock %}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+    nav { margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 1px solid #ddd; }
+    nav a { margin-right: 1rem; text-decoration: none; color: #0b5cab; font-weight: 500; }
+    nav a:hover { text-decoration: underline; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 1.5rem; }
+    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid #eee; vertical-align: top; }
+    .kv th { background: #f7f7f7; width: 240px; font-weight: 600; }
+    .list-table th { background: #f7f7f7; }
+    .list-table tr:hover { background: #fafafa; }
+    a.button {
+      display: inline-block; padding: 0.35rem 0.8rem; margin: 0 0.5rem 0.5rem 0;
+      border: 1px solid #0b5cab; border-radius: 4px; color: #0b5cab; text-decoration: none;
+      font-size: 0.9em;
+    }
+    a.button:hover { background: #0b5cab; color: #fff; }
+    .muted { color: #888; font-size: 0.85em; }
+    .badge { display: inline-block; padding: 0.1rem 0.6rem; border-radius: 3px; background: #eef2fb; color: #345; font-size: 0.8em; }
+    table table { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/people">People</a>
+    <a href="/properties">Properties</a>
+    <a href="/contracts">Contracts</a>
+  </nav>
+  {% block content %}{% endblock %}
+</body>
+</html>

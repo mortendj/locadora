@@ -1,0 +1,34 @@
+{% macro render_dict(d) %}
+  <table class="kv">
+    {% for key, value in d.items() %}
+    <tr>
+      <th>{{ key }}</th>
+      <td>{{ render_value(value) }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endmacro %}
+
+{% macro render_value(value) %}
+  {%- if value is mapping -%}
+    {{ render_dict(value) }}
+  {%- elif value is sequence and value is not string -%}
+    {%- if value -%}
+    <ul>
+      {% for item in value %}
+      <li>{% if item is mapping %}{{ render_dict(item) }}{% else %}{{ item }}{% endif %}</li>
+      {% endfor %}
+    </ul>
+    {%- else -%}
+    <span class="muted">&mdash;</span>
+    {%- endif -%}
+  {%- elif value is none or value == "" -%}
+    <span class="muted">&mdash;</span>
+  {%- elif value is sameas true -%}
+    yes
+  {%- elif value is sameas false -%}
+    no
+  {%- else -%}
+    {{ value }}
+  {%- endif -%}
+{% endmacro %}

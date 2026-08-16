@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Contracts — Locadora Viewer{% endblock %}
+{% block content %}
+<h1>Contracts</h1>
+<table class="list-table">
+  <tr><th>ID</th><th>Type</th><th>Label</th><th></th></tr>
+  {% for c in contracts %}
+  <tr>
+    <td><a href="/contracts/{{ c.id }}">{{ c.id }}</a></td>
+    <td><span class="badge">{{ c.contract_type }}</span></td>
+    <td><a href="/contracts/{{ c.id }}">{{ c.label }}</a></td>
+    <td><a href="/contracts/{{ c.id }}/render" target="_blank">view rendered &rarr;</a></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="4" class="muted">No contracts in this database yet.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

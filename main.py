@@ -75,6 +75,29 @@ def write_pdf(html_string: str, dest_path: Path) -> None:
         )
 
 
+# ── Jinja environment ────────────────────────────────────────────────────────
+
+_jinja_env = None
+
+
+def get_jinja_env() -> Environment:
+    """
+    Shared Jinja environment, built once and reused — both the CLI and the
+    web viewer render through this so contract output can never drift
+    between the two callers.
+    """
+    global _jinja_env
+    if _jinja_env is None:
+        _jinja_env = Environment(
+            loader=FileSystemLoader(str(ROOT / "templates")),
+            autoescape=False,
+            trim_blocks=True,
+            lstrip_blocks=True,
+        )
+        _jinja_env.globals["gender_terms"] = gender_terms
+    return _jinja_env
+
+
 # ── Rendering ────────────────────────────────────────────────────────────────
 
 def build_context(data: dict, css: str, review_mode: bool) -> dict:
@@ -95,64 +118,42 @@ def render_html(template, context: dict) -> str:
     return template.render(**context)
 
 
-# ── Main ─────────────────────────────────────────────────────────────────────
-
-def list_db_contracts() -> None:
-    print(f"Database: {db.DB_PATH}")
-    contracts = db.list_contracts()
-    if not contracts:
-        print("No contracts in the database yet.")
-        return
-    print(f"\n{'id':>4}  {'type':<12}  label")
-    for c in contracts:
-        print(f"{c['id']:>4}  {c['contract_type']:<12}  {c['label']}")
-    print()
-
-
-def main() -> None:
-
-    # 1. Parse CLI argument
-    if len(sys.argv) != 2:
-        print("Usage: python main.py <contract_id | contract_name>")
-        print("  e.g. python main.py 8   (contract id, reads from contracter.db)")
-        print("  e.g. python main.py --list   (list contracts in contracter.db)")
-        print("  e.g. python main.py real_estate.residential.long_term.elisa   (demo/example fixture)")
-        sys.exit(1)
-
-    arg = sys.argv[1].strip()
-
-    if arg == "--list":
-        list_db_contracts()
-        return
-
-    # 2. Load the contract's data — either a numeric database id, or (for
-    #    demo/example fixtures that are meant to stay as literal, readable
-    #    code) a dotted module path under demo.contracts.rental.brazil.
+def load_contract_data(arg: str) -> tuple[str, dict]:
+    """
+    Resolve a CLI/web argument into (contract_name, data) — either a numeric
+    database id, or (for demo/example fixtures meant to stay as literal,
+    readable code) a dotted module path under demo.contracts.rental.brazil.
+    Raises LookupError on failure.
+    """
+    arg = arg.strip()
     if arg.isdigit():
         contract_id = int(arg)
-        data: dict = db.get_contract(contract_id)
+        data = db.get_contract(contract_id)
         if data is None:
-            print(f"ERROR: No contract found in the database with id {contract_id}")
-            sys.exit(1)
-        contract_name = f"db{contract_id}"
-    else:
-        contract_name = arg
-        module_path = f"demo.contracts.rental.brazil.{contract_name}"
-        try:
-            contract_module = importlib.import_module(module_path)
-        except ModuleNotFoundError:
-            print(f"ERROR: Contract not found — {module_path}")
-            sys.exit(1)
-        data: dict = contract_module.data
+            raise LookupError(f"No contract found in the database with id {contract_id}")
+        return f"db{contract_id}", data
 
-    # 3. Resolve contract type
+    module_path = f"demo.contracts.rental.brazil.{arg}"
+    try:
+        contract_module = importlib.import_module(module_path)
+    except ModuleNotFoundError:
+        raise LookupError(f"Contract not found — {module_path}")
+    return arg, contract_module.data
+
+
+def prepare_contract(data: dict, contract_name: str) -> tuple[dict, list[str], list[str]]:
+    """
+    Resolve contract_type, auto-compute derived fields (end dates, the
+    commercial renovation abatement schedule, default late-payment %), and
+    validate. Mutates `data` in place and returns
+    (contract_type_entry, warnings, errors). Shared by the CLI and the web
+    viewer so this logic can't drift between the two callers.
+    """
     contract_type_name = data.get("contract_type", "residential")
     contract_type = CONTRACT_TYPES.get(contract_type_name)
     if contract_type is None:
-        print(f"ERROR: Unknown contract_type '{contract_type_name}'")
-        sys.exit(1)
+        raise ValueError(f"Unknown contract_type '{contract_type_name}'")
 
-    # 4. Compute dates.end_date (residential/commercial — short_term gives dates directly)
     if contract_type_name == "residential":
         start_date  = parse_br_date(data["dates"]["start_date"])
         term_months = data["dates"]["term_months"]
@@ -193,12 +194,66 @@ def main() -> None:
                         + relativedelta(months=pricing["initial_discount_months"])
                     )
 
-    # 5. Validate
     validator_module = importlib.import_module(contract_type["validator_module"])
     validate_fn = getattr(validator_module, contract_type["validator_func"])
     errors, warnings = validate_fn(data)
 
-    # 6. Print warnings
+    return contract_type, warnings, errors
+
+
+def render_contract_html(data: dict, contract_type: dict, review_mode: bool) -> str:
+    """Render one pass (preview or review) of a prepared contract to an HTML string."""
+    css = CSS_FILE.read_text(encoding="utf-8")
+    template = get_jinja_env().get_template(contract_type["template"])
+    context = build_context(data, css, review_mode)
+    return render_html(template, context)
+
+
+# ── Main ─────────────────────────────────────────────────────────────────────
+
+def list_db_contracts() -> None:
+    print(f"Database: {db.DB_PATH}")
+    contracts = db.list_contracts()
+    if not contracts:
+        print("No contracts in the database yet.")
+        return
+    print(f"\n{'id':>4}  {'type':<12}  label")
+    for c in contracts:
+        print(f"{c['id']:>4}  {c['contract_type']:<12}  {c['label']}")
+    print()
+
+
+def main() -> None:
+
+    # 1. Parse CLI argument
+    if len(sys.argv) != 2:
+        print("Usage: python main.py <contract_id | contract_name>")
+        print("  e.g. python main.py 8   (contract id, reads from contracter.db)")
+        print("  e.g. python main.py --list   (list contracts in contracter.db)")
+        print("  e.g. python main.py real_estate.residential.long_term.elisa   (demo/example fixture)")
+        sys.exit(1)
+
+    arg = sys.argv[1].strip()
+
+    if arg == "--list":
+        list_db_contracts()
+        return
+
+    # 2. Load the contract's data
+    try:
+        contract_name, data = load_contract_data(arg)
+    except LookupError as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)
+
+    # 3-6. Resolve type, derive fields, validate
+    try:
+        contract_type, warnings, errors = prepare_contract(data, contract_name)
+    except ValueError as e:
+        print(f"ERROR: {e}")
+        sys.exit(1)
+
+    # Print warnings
     if warnings:
         print(f"\n{'─' * 60}")
         print(f"  WARNINGS for '{contract_name}'")
@@ -217,23 +272,10 @@ def main() -> None:
         print(f"{'═' * 60}\n")
         sys.exit(1)
 
-    # 7. Read CSS
-    css = CSS_FILE.read_text(encoding="utf-8")
-
-    # 8. Set up Jinja2 environment
-    jinja_env = Environment(
-        loader=FileSystemLoader(str(ROOT / "templates")),
-        autoescape=False,
-        trim_blocks=True,
-        lstrip_blocks=True,
-    )
-    jinja_env.globals["gender_terms"] = gender_terms
-    template = jinja_env.get_template(contract_type["template"])
-
-    # 9. Ensure output directory exists
+    # 7. Ensure output directory exists
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    # 10. Render both passes
+    # 8. Render both passes
     passes = [
         # (review_mode, html_filename,              pdf_filename)
         (False, f"{contract_name}_preview.html", f"{contract_name}_locacao.pdf"),
@@ -242,8 +284,7 @@ def main() -> None:
 
     for review_mode, html_filename, pdf_filename in passes:
 
-        context     = build_context(data, css, review_mode)
-        html_string = render_html(template, context)
+        html_string = render_contract_html(data, contract_type, review_mode)
 
         # Write HTML
         html_path = OUTPUT_DIR / html_filename
