@@ -1,5 +1,7 @@
 # Locadora
 
+*"Locadora"* is Portuguese for a rental/leasing agency (as in *locadora de veículos*, a car rental company) — the name of the business this tool was built to serve, not just a label for the tool itself.
+
 Generates Brazilian rental contracts — long-term residential and short-term (temporada) — as HTML and PDF, from a SQLite-backed data model.
 Started as a tool to manage a small family rental business; the code and data here are a public, fully fictional demo of the same system.
 
@@ -45,3 +47,7 @@ Output lands in `output/` — `{name}_preview.html`, `{name}_review.html`, `{nam
 ## Tech stack
 
 Python · Jinja2 · xhtml2pdf · SQLite (stdlib `sqlite3`, no ORM)
+
+## License
+
+MIT — see [LICENSE](LICENSE).
