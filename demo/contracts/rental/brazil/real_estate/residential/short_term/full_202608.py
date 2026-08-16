@@ -1,4 +1,4 @@
-# demo/contracts/rental/brazil/housing/short_term/full_202608.py
+# demo/contracts/rental/brazil/real_estate/residential/short_term/full_202608.py
 # DEMO DATA — fictional example of a seasonal (temporada) booking covering
 # the whole house, for use as public-safe example/seed data.
 

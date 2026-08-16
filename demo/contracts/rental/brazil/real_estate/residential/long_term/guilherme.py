@@ -1,4 +1,4 @@
-# demo/contracts/rental/brazil/housing/long_term/guilherme.py
+# demo/contracts/rental/brazil/real_estate/residential/long_term/guilherme.py
 # DEMO DATA — fictional residential contract, structurally modeled on a
 # real one, for use as public-safe example/seed data. Not a real person.
 

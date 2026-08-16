@@ -1,4 +1,4 @@
-# demo/contracts/rental/brazil/housing/long_term/eduardo_barbearia.py
+# demo/contracts/rental/brazil/real_estate/residential/long_term/eduardo_barbearia.py
 # DEMO DATA — fictional commercial contract, structurally modeled on a
 # real one, for use as public-safe example/seed data. Not a real person.
 

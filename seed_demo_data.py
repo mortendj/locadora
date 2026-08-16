@@ -21,14 +21,14 @@ from demo.properties.tucanos_175_dir   import data as dir_data
 from demo.properties.tucanos_175_esq   import data as esq_data
 from demo.properties.chacara           import data as chacara_data
 
-from demo.contracts.rental.brazil.housing.long_term.elisa             import data as elisa_contract
-from demo.contracts.rental.brazil.housing.long_term.eduardo_barbearia import data as barbearia_contract
-from demo.contracts.rental.brazil.housing.long_term.eduardo_vestuario import data as vestuario_contract
-from demo.contracts.rental.brazil.housing.long_term.guilherme         import data as guilherme_contract
+from demo.contracts.rental.brazil.real_estate.residential.long_term.elisa             import data as elisa_contract
+from demo.contracts.rental.brazil.real_estate.residential.long_term.eduardo_barbearia import data as barbearia_contract
+from demo.contracts.rental.brazil.real_estate.residential.long_term.eduardo_vestuario import data as vestuario_contract
+from demo.contracts.rental.brazil.real_estate.residential.long_term.guilherme         import data as guilherme_contract
 
-from demo.contracts.rental.brazil.housing.short_term.full_202608     import data as full_contract
-from demo.contracts.rental.brazil.housing.short_term.no_suite_202609 import data as no_suite_contract
-from demo.contracts.rental.brazil.housing.short_term.dayuse_202610   import data as dayuse_contract
+from demo.contracts.rental.brazil.real_estate.residential.short_term.full_202608     import data as full_contract
+from demo.contracts.rental.brazil.real_estate.residential.short_term.no_suite_202609 import data as no_suite_contract
+from demo.contracts.rental.brazil.real_estate.residential.short_term.dayuse_202610   import data as dayuse_contract
 
 
 def _insert_residential(contract_data, landlord_id, tenant_id, guarantor_id, property_id):

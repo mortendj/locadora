@@ -1,4 +1,4 @@
-# demo/contracts/rental/brazil/housing/short_term/dayuse_202610.py
+# demo/contracts/rental/brazil/real_estate/residential/short_term/dayuse_202610.py
 # DEMO DATA — fictional example of a day-use-only seasonal (temporada)
 # booking (no overnight, no bedrooms), for use as public-safe example/seed data.
 

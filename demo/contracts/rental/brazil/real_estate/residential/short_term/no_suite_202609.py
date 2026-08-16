@@ -1,4 +1,4 @@
-# demo/contracts/rental/brazil/housing/short_term/no_suite_202609.py
+# demo/contracts/rental/brazil/real_estate/residential/short_term/no_suite_202609.py
 # DEMO DATA — fictional example of a seasonal (temporada) booking with the
 # suite locked off (company/CNPJ tenant), for use as public-safe example/seed data.
 
