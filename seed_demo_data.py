@@ -92,7 +92,7 @@ def _insert_commercial(contract_data, landlord_id, tenant_id, guarantor_id, prop
     )
 
 
-def _insert_seasonal(contract_data, landlord_id, property_id):
+def _insert_short_term(contract_data, landlord_id, property_id):
     # Temporada guests are per-booking by design — each booking's tenant
     # is its own person row, not shared/reused like the landlord/property.
     tenant_id = db.insert_person(contract_data["tenant"])
@@ -104,7 +104,7 @@ def _insert_seasonal(contract_data, landlord_id, property_id):
         **contract_data["termination"],
     }
     return db.insert_contract(
-        contract_type="seasonal",
+        contract_type="short_term",
         landlord_id=landlord_id,
         tenant_id=tenant_id,
         property_id=property_id,
@@ -148,15 +148,15 @@ def main():
         _insert_commercial(fernanda_contract,   marisa_id,   fernanda_id,  None,     margaridas_id),
     ]
 
-    seasonal_ids = [
-        _insert_seasonal(full_contract,     landlord_id, chacara_id),
-        _insert_seasonal(no_suite_contract,  landlord_id, chacara_id),
-        _insert_seasonal(dayuse_contract,    landlord_id, chacara_id),
+    short_term_ids = [
+        _insert_short_term(full_contract,     landlord_id, chacara_id),
+        _insert_short_term(no_suite_contract,  landlord_id, chacara_id),
+        _insert_short_term(dayuse_contract,    landlord_id, chacara_id),
     ]
 
     print(f"Inserted {len(residential_ids)} residential + {len(commercial_ids)} commercial + "
-          f"{len(seasonal_ids)} seasonal contracts "
-          f"(IDs: {residential_ids + commercial_ids + seasonal_ids}).")
+          f"{len(short_term_ids)} short_term contracts "
+          f"(IDs: {residential_ids + commercial_ids + short_term_ids}).")
     print(f"Database: {db.DB_PATH}")
 
 

@@ -39,7 +39,7 @@ _TABLES_IN_DEPENDENCY_ORDER = [
     ("properties", "id"),
     ("contracts", "id"),
     ("residential_contract_details", "contract_id"),
-    ("seasonal_contract_details", "contract_id"),
+    ("short_term_contract_details", "contract_id"),
     ("commercial_contract_details", "contract_id"),
     ("contract_witnesses", "id"),
 ]
@@ -113,7 +113,7 @@ CREATE TABLE IF NOT EXISTS residential_contract_details (
     property_tax_payer       TEXT
 );
 
-CREATE TABLE IF NOT EXISTS seasonal_contract_details (
+CREATE TABLE IF NOT EXISTS short_term_contract_details (
     contract_id                     INTEGER PRIMARY KEY REFERENCES contracts(id),
     check_in_date                   TEXT,
     check_in_time                   TEXT,
@@ -381,7 +381,7 @@ _RESIDENTIAL_DETAIL_FIELDS = [
     "initial_discount_amount", "property_tax_payer",
 ]
 
-_SEASONAL_DETAIL_FIELDS = [
+_SHORT_TERM_DETAIL_FIELDS = [
     "check_in_date", "check_in_time", "check_out_date", "check_out_time",
     "max_guests", "configuration", "total_amount", "total_amount_spelled_out",
     "number_of_nights", "nightly_rate", "down_payment_amount",
@@ -417,9 +417,9 @@ def insert_contract(
     witnesses: list[dict] | None = None,
 ) -> int:
     """
-    contract_type: "residential", "seasonal", or "commercial".
+    contract_type: "residential", "short_term", or "commercial".
     details: the type-specific fields (see _RESIDENTIAL_DETAIL_FIELDS /
-        _SEASONAL_DETAIL_FIELDS / _COMMERCIAL_DETAIL_FIELDS) — unknown/missing
+        _SHORT_TERM_DETAIL_FIELDS / _COMMERCIAL_DETAIL_FIELDS) — unknown/missing
         keys default to None. For "commercial", pass a nested dict under
         details["extra"] (not details["extra_json"]) for the JSON-blob
         fields (renovation_description, renovation_total_cost,
@@ -444,9 +444,9 @@ def insert_contract(
     if contract_type == "residential":
         fields = _RESIDENTIAL_DETAIL_FIELDS
         table = "residential_contract_details"
-    elif contract_type == "seasonal":
-        fields = _SEASONAL_DETAIL_FIELDS
-        table = "seasonal_contract_details"
+    elif contract_type == "short_term":
+        fields = _SHORT_TERM_DETAIL_FIELDS
+        table = "short_term_contract_details"
     elif contract_type == "commercial":
         fields = _COMMERCIAL_DETAIL_FIELDS
         table = "commercial_contract_details"
@@ -480,7 +480,7 @@ def get_contract(contract_id: int) -> dict | None:
     Reconstructs the same nested dict shape main.py's contract modules
     produce today (landlord/tenant/guarantor/property embedded, plus
     dates/pricing/termination/charges for residential or
-    stay/pricing/termination/rules/security_deposit for seasonal) — so
+    stay/pricing/termination/rules/security_deposit for short_term) — so
     this can act as a drop-in replacement for `contract_module.data`.
     """
     conn = get_connection()
@@ -521,9 +521,9 @@ def get_contract(contract_id: int) -> dict | None:
         }
         data["charges"] = {"property_tax_payer": details["property_tax_payer"]}
 
-    elif row["contract_type"] == "seasonal":
+    elif row["contract_type"] == "short_term":
         details = conn.execute(
-            "SELECT * FROM seasonal_contract_details WHERE contract_id = ?",
+            "SELECT * FROM short_term_contract_details WHERE contract_id = ?",
             (contract_id,),
         ).fetchone()
         data["stay"] = {
@@ -625,12 +625,12 @@ def list_contracts() -> list[dict]:
             c.id, c.contract_type, c.contract_date,
             COALESCE(t.name, t.company_name) AS tenant_name,
             p.street_address,
-            COALESCE(r.start_date, s.check_in_date, m.start_date) AS start_date
+            COALESCE(r.start_date, st.check_in_date, m.start_date) AS start_date
         FROM contracts c
         JOIN people t ON t.id = c.tenant_id
         JOIN properties p ON p.id = c.property_id
         LEFT JOIN residential_contract_details r ON r.contract_id = c.id
-        LEFT JOIN seasonal_contract_details s ON s.contract_id = c.id
+        LEFT JOIN short_term_contract_details st ON st.contract_id = c.id
         LEFT JOIN commercial_contract_details m ON m.contract_id = c.id
         ORDER BY c.id
         """

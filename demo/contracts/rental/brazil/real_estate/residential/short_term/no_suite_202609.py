@@ -1,5 +1,5 @@
 # demo/contracts/rental/brazil/real_estate/residential/short_term/no_suite_202609.py
-# DEMO DATA — fictional example of a seasonal (temporada) booking with the
+# DEMO DATA — fictional example of a short-term (temporada) booking with the
 # suite locked off (company/CNPJ tenant), for use as public-safe example/seed data.
 
 from demo.people.rosangela_duarte        import data as _landlord
@@ -7,7 +7,7 @@ from demo.people.exemplo_hospede_pj import data as _tenant
 from demo.properties.chacara             import data as _property
 
 data = {
-    "contract_type": "seasonal",
+    "contract_type": "short_term",
     "landlord": _landlord,
     "tenant":   _tenant,
     "property": _property,

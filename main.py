@@ -44,7 +44,7 @@ CONTRACT_TYPES = {
         "validator_module": "templates.rental.brazil.real_estate.residential.long_term.locacao_validators",
         "validator_func":   "validate_locacao",
     },
-    "seasonal": {
+    "short_term": {
         "template":        "rental/brazil/real_estate/residential/short_term/locacao_temporada.html",
         "validator_module": "templates.rental.brazil.real_estate.residential.short_term.locacao_temporada_validators",
         "validator_func":   "validate_locacao_temporada",
@@ -151,7 +151,7 @@ def main() -> None:
         print(f"ERROR: Unknown contract_type '{contract_type_name}'")
         sys.exit(1)
 
-    # 4. Compute dates.end_date (residential/commercial — seasonal gives dates directly)
+    # 4. Compute dates.end_date (residential/commercial — short_term gives dates directly)
     if contract_type_name == "residential":
         start_date  = parse_br_date(data["dates"]["start_date"])
         term_months = data["dates"]["term_months"]

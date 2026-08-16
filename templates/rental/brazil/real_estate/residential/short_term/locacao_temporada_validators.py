@@ -2,7 +2,7 @@
 
 from br_dates import parse_br_date
 
-MAX_SEASONAL_DAYS = 90
+MAX_SHORT_TERM_DAYS = 90
 
 
 def _parse_brl(s):
@@ -89,10 +89,10 @@ def validate_locacao_temporada(data):
                 )
         else:
             duration_days = (check_out - check_in).days
-            if duration_days > MAX_SEASONAL_DAYS:
+            if duration_days > MAX_SHORT_TERM_DAYS:
                 errors.append(
-                    f"LEGAL ERROR: A seasonal rental (locação por temporada) "
-                    f"cannot exceed {MAX_SEASONAL_DAYS} days "
+                    f"LEGAL ERROR: A short-term rental (locação por temporada) "
+                    f"cannot exceed {MAX_SHORT_TERM_DAYS} days "
                     f"(duration provided: {duration_days} days)."
                 )
 
@@ -106,7 +106,7 @@ def validate_locacao_temporada(data):
     if not prop.get("common_areas") and not prop.get("bedrooms"):
         warnings.append(
             "WARNING: property.common_areas / property.bedrooms not provided. "
-            "Lei 8.245/91 (art. 48, parágrafo único) expects a seasonal-rental "
+            "Lei 8.245/91 (art. 48, parágrafo único) expects a short-term-rental "
             "contract to list the furniture/items provided with the property; "
             "the corresponding clause will be omitted."
         )
